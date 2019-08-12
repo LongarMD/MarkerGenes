@@ -67,13 +67,15 @@ def get_used_genes(markers_by_type):
 
 def get_cell_types(markers: list) -> list:
     """
-    Returns an array of cell types given an array of markers sorted by cell type.
+    Returns an array of cell types given an array of used markers.
     :param markers: used markers
+    :return: 2D array of cell_type=>[genes]
     """
     used_types = []
     for marker in markers:
         c_type = marker[2]
-        used_types.append(c_type)
+        if c_type not in used_types:
+            used_types.append(c_type)
     return used_types
 
 

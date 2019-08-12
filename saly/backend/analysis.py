@@ -1,4 +1,3 @@
-from numpy import append
 
 
 def get_top_activations(n: int, cell_type_activations: list) -> list:
@@ -11,7 +10,7 @@ def get_top_activations(n: int, cell_type_activations: list) -> list:
     tops = []
     for cell in cell_type_activations:
         top = cell.argsort()[-n:][::-1]
-        append(tops, top)
+        tops.append(top)
 
     return tops
 
@@ -29,3 +28,4 @@ def index_to_cell_type(indices, cell_types):
         activated_types.append([cell_types[i] for i in cell])
 
     return activated_types
+
