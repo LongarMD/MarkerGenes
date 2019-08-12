@@ -113,7 +113,7 @@ def plot_label_colours(colours):
     ax.set_title('Cell type colours')
 
 
-def draw_embedding(x, y, model, colours, graph_name=''):
+def draw_embedding(x, y, model, colours=None, graph_name=''):
     """
     Draws a scatter plot of the provided embedding model
     :param x: Data x
@@ -122,6 +122,9 @@ def draw_embedding(x, y, model, colours, graph_name=''):
     :param colours: label colours
     :param graph_name: Graph title
     """
+    if colours is None:
+        colours = get_label_colours(y)
+
     model_out = model.fit_transform(x)
 
     plt.clf()
