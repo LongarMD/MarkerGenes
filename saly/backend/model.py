@@ -8,6 +8,13 @@ import tensorflow as tf
 
 
 def get_weight_mask(shape, by_cell_type, genes):
+    """
+    Creates a binary matrix
+    :param shape: shape of the matrix (n of cell types, n of genes)
+    :param by_cell_type: Markers sorted by cell type
+    :param genes: list of used genes (in the same order as in the data)
+    :return: binary matrix
+    """
     mask = zeros(shape=shape)
     for i, cell_type in enumerate(by_cell_type):
         for gene in by_cell_type[cell_type]:

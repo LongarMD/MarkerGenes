@@ -11,3 +11,5 @@ from .preprocessing import log_10
 from .preprocessing import from_log10
 from .model import get_weight_mask
 from .model import Markers
+from .analysis import get_top_activations
+from .analysis import index_to_cell_type

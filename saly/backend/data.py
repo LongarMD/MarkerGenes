@@ -7,7 +7,6 @@ def get_markers_by_species(species: str, markers: Table) -> list:
     Returns an array of marker genes of the specified species.
     :param species: "Mouse", "Human" etc.
     :param markers: Array of marker genes
-    :return:
     """
     markers_by_species = []
     for meta in markers.metas:
@@ -16,12 +15,10 @@ def get_markers_by_species(species: str, markers: Table) -> list:
     return markers_by_species
 
 
-def get_used_markers(genes, markers):
+def get_used_markers(genes: list, markers: list) -> list:
     """
     Returns the marker genes found in the given data set.
-    :param genes:
-    :param markers:
-    :return:
+    :return: list of markers
     """
     used_markers = []
     for i, gene_name in enumerate(genes):
@@ -31,12 +28,11 @@ def get_used_markers(genes, markers):
     return used_markers
 
 
-def sort_markers_by_type(markers):
+def sort_markers_by_type(markers: list) -> OrderedDict:
     """
     Returns an OrderedDictionary of every cell type and its
     corresponding genes found in the given array of markers.
-    :param markers:
-    :return:
+    :param markers: list of used markers
     """
     by_type = OrderedDict()
     for marker in markers:
@@ -69,11 +65,10 @@ def get_used_genes(markers_by_type):
     return used_genes
 
 
-def get_cell_types(markers):
+def get_cell_types(markers: list) -> list:
     """
     Returns an array of cell types given an array of markers sorted by cell type.
-    :param markers:
-    :return:
+    :param markers: used markers
     """
     used_types = []
     for marker in markers:
@@ -82,12 +77,10 @@ def get_cell_types(markers):
     return used_types
 
 
-def get_rows_to_drop(labels_to_drop, labels):
+def get_rows_to_drop(labels_to_drop: list, labels: list) -> list:
     """
     Returns a list of row indices to drop from a list of row labels.
-    :param labels_to_drop:
-    :param labels:
-    :return:
+    :return: list of indices
     """
     to_drop = []
     for i, c_type in enumerate(labels):
@@ -96,13 +89,13 @@ def get_rows_to_drop(labels_to_drop, labels):
     return to_drop
 
 
-def check_for_unknown(labels, cell_types, aliases):
+def check_for_unknown(labels: list, cell_types: list, aliases: dict) -> list:
     """
     Returns cell types not found in either of the provided lists.
-    :param labels:
-    :param cell_types:
-    :param aliases:
-    :return:
+    :param labels: list of labels
+    :param cell_types: list of cell types
+    :param aliases: dictionary of aliases
+    :return: unknown labels
     """
     unknown = []
     known_aliases = list(aliases.keys())
