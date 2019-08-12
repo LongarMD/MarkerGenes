@@ -1,3 +1,5 @@
+import pickle
+from random import uniform
 
 
 def get_top_activations(n: int, cell_type_activations: list) -> list:
@@ -29,3 +31,38 @@ def index_to_cell_type(indices, cell_types):
 
     return activated_types
 
+
+def get_random_colour():
+    """
+    Generates random RGB values.
+    """
+    pastel_factor = uniform(0, 1.0)
+    return [(x + pastel_factor) / (1.0 + pastel_factor) for x in [uniform(0, 1.0) for _ in [1, 2, 3]]]
+
+
+def save_label_colours(colours: dict, path: str) -> str:
+    """
+    Saves a dictionary of label : colour into a pickle file
+    :param colours: a dictionary of label : colour pairs
+    :param path: path to save folder
+    :return: file location
+    """
+    name = path + 'label_colours.pickle'
+
+    pickle_out = open(name, "wb")
+    pickle.dump(colours, pickle_out)
+    pickle_out.close()
+
+    return name
+
+
+def load_label_colours(path: str) -> dict:
+    """
+    Loads a dictionary from a pickle file
+    :param path: path to file
+    :return: loaded dictionary
+    """
+    pickle_in = open(path, "rb")
+    colours = pickle.load(pickle_in)
+
+    return colours
