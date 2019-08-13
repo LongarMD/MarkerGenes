@@ -1,5 +1,6 @@
 from .. import backend
 from ..backend import Markers
+from numpy import save, load
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model
 
@@ -69,3 +70,13 @@ def test_model(model, test_data, verbose=0):
     """
     loss = model.evaluate(test_data, test_data, verbose=verbose)
     return loss
+
+
+def save_weights(model, path):
+    weights = model.get_weights()
+    save(path, weights, allow_pickle=True)
+
+
+def load_weights(model, path):
+    weights = load(path + '.npy', allow_pickle=True)
+    model.set_weights(weights)
