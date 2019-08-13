@@ -138,7 +138,7 @@ def draw_embedding(x, y, model, colours=None, graph_name=''):
     by_label = OrderedDict(zip(plt_labels, handles))
     by_label = OrderedDict(sorted(by_label.items()))
 
-    plt.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0., 1, 0, .1))
+    plt.legend(by_label.values(), by_label.keys())#, bbox_to_anchor=(0., 1, 0, .1))
 
     plt.title(graph_name)
     plt.axis('off')
