@@ -3,6 +3,7 @@ from ..backend import Markers
 from numpy import save, load
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model
+from keras.backend import manual_variable_initialization
 
 
 def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_n=0.1,
@@ -78,5 +79,10 @@ def save_weights(model, path):
 
 
 def load_weights(model, path):
+    manual_variable_initialization(True)
+    
     weights = load(path + '.npy', allow_pickle=True)
     model.set_weights(weights)
+    
+    manual_variable_initialization(False)
+    return model
