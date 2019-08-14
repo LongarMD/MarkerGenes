@@ -71,18 +71,3 @@ def test_model(model, test_data, verbose=0):
     """
     loss = model.evaluate(test_data, test_data, verbose=verbose)
     return loss
-
-
-def save_weights(model, path):
-    weights = model.get_weights()
-    save(path, weights, allow_pickle=True)
-
-
-def load_weights(model, path):
-    manual_variable_initialization(True)
-    
-    weights = load(path + '.npy', allow_pickle=True)
-    model.set_weights(weights)
-    
-    manual_variable_initialization(False)
-    return model
