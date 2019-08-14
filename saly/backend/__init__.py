@@ -3,6 +3,7 @@ from .analysis import get_top_activations
 from .analysis import index_to_cell_type
 from .analysis import load_label_colours
 from .analysis import save_label_colours
+from .analysis import get_graph_labels
 from .data import check_for_unknown
 from .data import get_cell_types
 from .data import get_markers_by_species

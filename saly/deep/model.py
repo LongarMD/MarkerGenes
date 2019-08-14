@@ -1,9 +1,7 @@
 from .. import backend
 from ..backend import Markers
-from numpy import save, load
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model
-from keras.backend import manual_variable_initialization
 
 
 def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_n=0.1,

@@ -115,12 +115,13 @@ def plot_label_colours(colours):
     ax.set_xticklabels([])
 
 
-def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
+def draw_embedding(x, y, model, subplot=None, colours=None, alpha=1.0, graph_title=''):
     """
     Draws a scatter plot of the provided embedding model
     :param x: Data x
     :param y: Data labels
     :param model: embedder e.g. tSNE or PCA
+    :param subplot: subplot position
     :param colours: label colours
     :param alpha: Node alpha
     :param graph_title: Graph title
@@ -130,18 +131,17 @@ def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
 
     model_out = model.fit_transform(x)
 
-    plt.clf()
-    plt.figure(figsize=(8, 8), dpi=80)
+    if subplot is not None:
+        plt.subplot(subplot)
 
     for i, entry in enumerate(model_out):
         plt.scatter(entry[0], entry[1], color=colours[y.iloc[i]], label=y.iloc[i], alpha=alpha, edgecolors='black')
 
     # Create a legend
-    handles, plt_labels = plt.gca().get_legend_handles_labels()
-    by_label = OrderedDict(zip(plt_labels, handles))
-    by_label = OrderedDict(sorted(by_label.items()))
+    plt_handles, plt_labels = plt.gca().get_legend_handles_labels()
+    handles, labels = backend.get_graph_labels(plt_handles, plt_labels)
 
-    leg = plt.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+    leg = plt.legend(handles, labels, bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
     for l in leg.get_lines():
         l.set_alpha(1.0)
 

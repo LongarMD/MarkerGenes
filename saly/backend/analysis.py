@@ -1,6 +1,7 @@
 import pickle
-from random import random, uniform, seed
+from random import uniform, seed
 from time import time
+from collections import OrderedDict
 
 
 def get_top_activations(n: int, cell_type_activations: list) -> list:
@@ -68,3 +69,10 @@ def load_label_colours(path: str) -> dict:
     colours = pickle.load(pickle_in)
 
     return colours
+
+
+def get_graph_labels(handles, plt_labels):
+    by_label = OrderedDict(zip(plt_labels, handles))
+    by_label = OrderedDict(sorted(by_label.items()))
+
+    return by_label.values(), by_label.keys()
