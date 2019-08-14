@@ -113,14 +113,15 @@ def plot_label_colours(colours):
     ax.set_title('Cell type colours')
 
 
-def draw_embedding(x, y, model, colours=None, graph_title=''):
+def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
     """
     Draws a scatter plot of the provided embedding model
     :param x: Data x
     :param y: Data labels
     :param model: embedder e.g. tSNE or PCA
     :param colours: label colours
-    :param graph_name: Graph title
+    :param alpha: Node alpha
+    :param graph_title: Graph title
     """
     if colours is None:
         colours = get_label_colours(y)
@@ -131,7 +132,7 @@ def draw_embedding(x, y, model, colours=None, graph_title=''):
     plt.figure(figsize=(8, 8), dpi=80, facecolor='w', edgecolor='k')
 
     for i, entry in enumerate(model_out):
-        plt.scatter(entry[0], entry[1], color=colours[y.iloc[i]], label=y.iloc[i], alpha=0.25, edgecolors='b')
+        plt.scatter(entry[0], entry[1], color=colours[y.iloc[i]], label=y.iloc[i], alpha=alpha, edgecolors='black')
 
     # Get legend
     handles, plt_labels = plt.gca().get_legend_handles_labels()
