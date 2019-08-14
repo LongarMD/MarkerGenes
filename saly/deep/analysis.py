@@ -133,7 +133,7 @@ def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
     plt.clf()
     plt.figure(figsize=(8, 8), dpi=80)
 
-    for i, entry in enumerate(tsne_out):
+    for i, entry in enumerate(model_out):
         plt.scatter(entry[0], entry[1], color=colours[y.iloc[i]], label=y.iloc[i], alpha=alpha, edgecolors='black')
 
     # Create a legend
