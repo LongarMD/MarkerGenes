@@ -115,13 +115,12 @@ def plot_label_colours(colours):
     ax.set_xticklabels([])
 
 
-def draw_embedding(x, y, model, subplot=None, colours=None, alpha=1.0, graph_title=''):
+def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
     """
     Draws a scatter plot of the provided embedding model
     :param x: Data x
     :param y: Data labels
     :param model: embedder e.g. tSNE or PCA
-    :param subplot: subplot position
     :param colours: label colours
     :param alpha: Node alpha
     :param graph_title: Graph title
@@ -131,9 +130,7 @@ def draw_embedding(x, y, model, subplot=None, colours=None, alpha=1.0, graph_tit
 
     model_out = model.fit_transform(x)
 
-    if subplot is not None:
-        plt.subplot(subplot)
-
+    plt.figure(figsize=(8, 8), dpi=80)
     for i, entry in enumerate(model_out):
         plt.scatter(entry[0], entry[1], color=colours[y.iloc[i]], label=y.iloc[i], alpha=alpha, edgecolors='black')
 
