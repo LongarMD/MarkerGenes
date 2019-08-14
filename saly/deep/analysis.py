@@ -111,6 +111,8 @@ def plot_label_colours(colours):
 
     ax.scatter(x, y, s=400, c=c)
     ax.set_title('Cell type colours')
+    ax.set_yticklabels([])
+    ax.set_xticklabels([])
 
 
 def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
@@ -129,17 +131,19 @@ def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
     model_out = model.fit_transform(x)
 
     plt.clf()
-    plt.figure(figsize=(8, 8), dpi=80, facecolor='w', edgecolor='k')
+    plt.figure(figsize=(8, 8), dpi=80)
 
-    for i, entry in enumerate(model_out):
+    for i, entry in enumerate(tsne_out):
         plt.scatter(entry[0], entry[1], color=colours[y.iloc[i]], label=y.iloc[i], alpha=alpha, edgecolors='black')
 
-    # Get legend
+    # Create a legend
     handles, plt_labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(plt_labels, handles))
     by_label = OrderedDict(sorted(by_label.items()))
 
-    plt.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(0., 1, 0, .1))
+    leg = plt.legend(by_label.values(), by_label.keys(), bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+    for l in leg.get_lines():
+        l.set_alpha(1.0)
 
     plt.title(graph_title)
     plt.axis('off')

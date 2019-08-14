@@ -1,5 +1,6 @@
 import pickle
-from random import uniform
+from random import random, uniform, seed
+from time import time
 
 
 def get_top_activations(n: int, cell_type_activations: list) -> list:
@@ -36,7 +37,8 @@ def get_random_colour():
     """
     Generates random RGB values.
     """
-    pastel_factor = uniform(0, 1.0)
+    seed(time())
+    pastel_factor = uniform(0.0, 0.8)
     return [(x + pastel_factor) / (1.0 + pastel_factor) for x in [uniform(0, 1.0) for _ in [1, 2, 3]]]
 
 
