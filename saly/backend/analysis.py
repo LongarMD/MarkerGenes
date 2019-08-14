@@ -4,7 +4,7 @@ from time import time
 from collections import OrderedDict
 
 
-def get_top_activations(n: int, cell_type_activations: list) -> list:
+def get_top_activated_indices(n: int, cell_type_activations: list) -> list:
     """
     Returns a list of indices of top n activations
     :param n: number of top activations to return

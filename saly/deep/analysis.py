@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from numpy import concatenate, mean, transpose
+from numpy import concatenate, mean, transpose, zeros
 from seaborn import distplot
 
 from .. import backend
@@ -15,7 +15,7 @@ def get_results(labels: list, cell_activations: list, markers: list, aliases: di
     """
     cell_types = backend.get_cell_types(markers)
 
-    top_activations = backend.get_top_activations(1, cell_activations)
+    top_activations = backend.get_top_activated_indices(1, cell_activations)
     predictions = backend.index_to_cell_type(top_activations, cell_types)
 
     correct = 0
@@ -67,7 +67,7 @@ def plot_activation_distribution(cell_activations, markers, title=''):
     :param title: graph title
     """
     n_cell_types = len(backend.get_cell_types(markers))
-    sorted_indices = backend.get_top_activations(n_cell_types, cell_activations)
+    sorted_indices = backend.get_top_activated_indices(n_cell_types, cell_activations)
 
     sorted_activations = []
     for i, cell in enumerate(cell_activations):
@@ -114,7 +114,18 @@ def plot_label_colours(colours):
 
 
 def get_top_activations(n, cell_activations):
+    """
+    Returns cell activations with only the top n activations
+    :param n: top number of cell types to return
+    :param cell_activations: list of cell activations
+    """
+    top_indices = backend.get_top_activated_indices(n, cell_activations)
+    top_activations = [zeros(len(x)) for x in cell_activations]
+    for i, cell_indices in enumerate(top_indices):
+        for type_index in cell_indices:
+            top_activations[i][type_index] = cell_activations[i][type_index]
 
+    return top_activations
 
 
 def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):

@@ -1,5 +1,5 @@
 from .analysis import get_random_colour
-from .analysis import get_top_activations
+from .analysis import get_top_activated_indices
 from .analysis import index_to_cell_type
 from .analysis import load_label_colours
 from .analysis import save_label_colours
