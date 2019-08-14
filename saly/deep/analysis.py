@@ -137,9 +137,10 @@ def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
     plt_handles, plt_labels = plt.gca().get_legend_handles_labels()
     handles, labels = backend.get_graph_labels(plt_handles, plt_labels)
 
-    leg = plt.legend(handles, labels, bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
-    for l in leg.get_lines():
-        l.set_alpha(1.0)
+    for handle in handles:
+        handle.set_alpha(1.0)
+
+    plt.legend(handles, labels, bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 
     plt.title(graph_title)
     plt.axis('off')
