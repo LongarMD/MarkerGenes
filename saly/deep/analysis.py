@@ -113,6 +113,10 @@ def plot_label_colours(colours):
     ax.set_xticklabels([])
 
 
+def get_top_activations(n, cell_activations):
+
+
+
 def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
     """
     Draws a scatter plot of the provided embedding model
@@ -148,6 +152,14 @@ def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
 
 
 def draw_comparison(old, new, model, colours=None, graph_title=''):
+    """
+    Draws a combined graph using both data sets
+    :param old: a list of old data (data, labels)
+    :param new: a list of new data (data, labels)
+    :param model: embedder e.g. tSNE or PCA
+    :param colours: label colours
+    :param graph_title: Graph title
+    """
     if colours is None:
         colours = get_label_colours(old[1])
 
@@ -171,7 +183,7 @@ def draw_comparison(old, new, model, colours=None, graph_title=''):
         handle.set_edgecolors('black')
         handle.set_alpha(1.0)
 
-    leg = plt.legend(handles, labels, bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+    plt.legend(handles, labels, bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
 
     plt.title(graph_title)
     plt.axis('off')
