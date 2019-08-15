@@ -1,4 +1,4 @@
-from backend import sort_markers_by_type
+from saly.backend import sort_markers_by_type
 
 from numpy import zeros, transpose
 from keras import backend as K
