@@ -35,18 +35,19 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     dropout = Dropout(rate=dropout_n)(dense_out_1)
     output_layer = Dense(input_dim, activation=activation, name='output')(dropout)
     # --------
-    autoencoder_model = Model(input_layer, output_layer)
+    autoencoder_model = Model(input_layer, [marker_layer, output_layer])
     marker_model = Model(input_layer, marker_layer)
     encoder_model = Model(input_layer, bottleneck_layer)
 
-    autoencoder_model.compile(loss=loss, optimizer=optimizer)
+    autoencoder_model.compile(loss={'cell_activations': backend.marker_loss, 'output': 'mse'}, optimizer=optimizer)
     marker_model.compile(loss=loss, optimizer=optimizer)
     encoder_model.compile(loss=loss, optimizer=optimizer)
 
     return autoencoder_model, marker_model, encoder_model
 
 
-def train_model(model, data, epochs, validation_data=None, batch_size=256, verbose=1, callbacks=None):
+def train_model(model, data, labels, markers, marker_aliases, epochs,
+                validation_data=None, batch_size=256, verbose=1, callbacks=None):
     """
     Trains the Keras model.
     :return: a Keras train history object
@@ -54,7 +55,8 @@ def train_model(model, data, epochs, validation_data=None, batch_size=256, verbo
     if validation_data is not None:
         validation_data = (validation_data, validation_data)
 
-    history = model.fit(data, data,
+    labels_one_hot = backend.one_hot_encode(labels, markers, marker_aliases)
+    history = model.fit(data, {'cell_activations': labels_one_hot, 'output': data},
                         epochs=epochs, batch_size=batch_size,
                         validation_data=validation_data,
                         callbacks=callbacks,

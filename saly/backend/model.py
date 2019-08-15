@@ -1,10 +1,14 @@
+from backend import sort_markers_by_type
+
 from numpy import zeros, transpose
 from keras import backend as K
 from keras.layers import Layer
 from keras import activations, initializers, regularizers, constraints
+from keras.activations import softmax
+from keras.losses import categorical_crossentropy
 from keras.engine.base_layer import InputSpec
-from tensorflow import convert_to_tensor
-import tensorflow as tf
+
+from tensorflow import multiply, convert_to_tensor
 
 
 def get_weight_mask(shape, by_cell_type, genes):
@@ -21,6 +25,40 @@ def get_weight_mask(shape, by_cell_type, genes):
             gene_index = genes.get_loc(gene)
             mask[i][gene_index] = 1.0
     return mask
+
+
+def one_hot_encode(labels, markers, aliases):
+    """
+    One hot encodes a list of marker cell types
+    :param labels: Used labels
+    :param markers: Used markers
+    :param aliases: Cell type aliases (saly.check_labels)
+    """
+    by_type = sort_markers_by_type(markers)
+    types = list(by_type.keys())
+
+    one_hot = zeros(shape=(len(labels), len(by_type)))
+    for i, label in enumerate(labels):
+        if label in types:
+            label_index = types.index(label)
+        elif label in aliases.keys():
+            label_index = types.index(aliases[label])
+        else:
+            raise NameError("Unknown cell type!", label)
+
+        one_hot[i][label_index] = 1.0
+
+    return one_hot
+
+
+def marker_loss(y_true, y_pred):
+    """
+    Get the marker cell type activations classification loss
+    :param y_true: True values
+    :param y_pred: The model's prediction
+    """
+    probabilities = softmax(y_pred)
+    return categorical_crossentropy(y_true, probabilities)
 
 
 class Markers(Layer):
@@ -76,7 +114,7 @@ class Markers(Layer):
         self.built = True
 
     def call(self, inputs):
-        conns = tf.multiply(self.kernel, self.weight_mask)
+        conns = multiply(self.kernel, self.weight_mask)
         output = K.dot(inputs, conns)
         if self.use_bias:
             output = K.bias_add(output, self.bias, data_format='channels_last')

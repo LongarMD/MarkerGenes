@@ -13,6 +13,8 @@ from .data import get_used_markers
 from .data import sort_markers_by_type
 from .model import Markers
 from .model import get_weight_mask
+from .model import one_hot_encode
+from .model import marker_loss
 from .preprocessing import from_log10
 from .preprocessing import get_data_splits
 from .preprocessing import log_10
