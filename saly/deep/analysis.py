@@ -39,25 +39,46 @@ def plot_model_history(history):
     Draws a model's training history.
     :param history: a Keras history object
     """
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex='all', figsize=(7, 7), dpi=80)
+    output_loss = history.history['output_loss']
+    output_loss = [i * 100 for i in output_loss]
 
-    loss = history.history['loss']
-    epochs = range(1, len(loss) + 1)
+    accuracy = history.history['cell_activations_marker_prediction_metric']
+    accuracy = [i * 100 for i in accuracy]
 
-    plt.plot(epochs, loss, 'bo', label='Training loss')
+    marker_loss = history.history['cell_activations_loss']
+    epochs = range(1, len(output_loss) + 1)
+
+    ax1.plot(epochs, output_loss, 'b--', label='Reconstruction loss')
+    ax1.plot(epochs, marker_loss, 'b-,', label='Cell type prediction loss')
+    ax2.plot(epochs, accuracy, 'g--', label='Training accuracy')
 
     if 'val_loss' in history.history.keys():
-        val_loss = history.history['val_loss']
-        plt.plot(epochs, val_loss, 'b', label='Validation loss', c='orange')
-        plt.title('Training and validation loss per epoch')
-    else:
-        plt.title('Training loss per epoch')
+        val_output_loss = history.history['val_output_loss']
+        val_output_loss = [i * 100 for i in val_output_loss]
 
+        val_accuracy = history.history['val_cell_activations_marker_prediction_metric']
+        val_accuracy = [i * 100 for i in val_accuracy]
+
+        val_marker_loss = history.history['val_cell_activations_loss']
+
+        ax1.plot(epochs, val_output_loss, 'r--', label='Validation reconstruction loss')
+        ax1.plot(epochs, val_marker_loss, 'r-', label='Validation cell type prediction loss')
+        ax1.set_title('Training and validation loss')
+
+        ax2.plot(epochs, val_accuracy, 'g-', label='Validation accuracy')
+        ax2.set_title('Training and validation accuracy')
+    else:
+        ax1.set_title('Training loss per epoch')
+        ax2.set_title('Training accuracy per epoch')
+
+    fig.text(0.04, 0.5, 'Accuracy (%)                                                    Loss', va='center',
+             rotation='vertical')
     plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
+    ax1.legend()
+    ax2.legend()
 
     plt.show()
-
 
 def plot_activation_distribution(cell_activations, markers, title=''):
     """

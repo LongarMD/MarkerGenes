@@ -6,6 +6,7 @@ from keras.layers import Layer
 from keras import activations, initializers, regularizers, constraints
 from keras.activations import softmax
 from keras.losses import categorical_crossentropy
+from keras.metrics import categorical_accuracy
 from keras.engine.base_layer import InputSpec
 
 from tensorflow import multiply, convert_to_tensor, float32
@@ -59,6 +60,11 @@ def marker_loss(y_true, y_pred):
     """
     probabilities = softmax(y_pred)
     return categorical_crossentropy(y_true, probabilities)
+
+
+def marker_prediction_metric(y_true, y_pred):
+    probabilities = softmax(y_pred)
+    return categorical_accuracy(y_true, probabilities)
 
 
 class Markers(Layer):

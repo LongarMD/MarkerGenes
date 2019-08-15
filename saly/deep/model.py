@@ -39,7 +39,10 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     marker_model = Model(input_layer, marker_layer)
     encoder_model = Model(input_layer, bottleneck_layer)
 
-    autoencoder_model.compile(loss={'cell_activations': backend.marker_loss, 'output': 'mse'}, optimizer=optimizer)
+    autoencoder_model.compile(loss={'cell_activations': backend.marker_loss, 'output': loss},
+                              loss_weights={'cell_activations': 1., 'output': 100.0},
+                              metrics={'cell_activations': backend.marker_prediction_metric},
+                              optimizer=optimizer)
     marker_model.compile(loss=loss, optimizer=optimizer)
     encoder_model.compile(loss=loss, optimizer=optimizer)
 
@@ -53,7 +56,9 @@ def train_model(model, data, labels, markers, marker_aliases, epochs,
     :return: a Keras train history object
     """
     if validation_data is not None:
-        validation_data = (validation_data, validation_data)
+        validation_labels = validation_data[1]
+        val_labels_one_hot = backend.one_hot_encode(validation_labels, markers, marker_aliases)
+        validation_data = (validation_data[0], {'cell_activations': val_labels_one_hot, 'output': validation_data[0]})
 
     labels_one_hot = backend.one_hot_encode(labels, markers, marker_aliases)
     history = model.fit(data, {'cell_activations': labels_one_hot, 'output': data},
@@ -65,10 +70,15 @@ def train_model(model, data, labels, markers, marker_aliases, epochs,
     return history
 
 
-def test_model(model, test_data, verbose=0):
+def test_model(model, data_x, data_y, markers, aliases, verbose=0):
     """
     Evaluates the model on the given data
     :return: the data's loss score
     """
-    loss = model.evaluate(test_data, test_data, verbose=verbose)
-    return loss
+    labels_one_hot = backend.one_hot_encode(data_y, markers, aliases)
+    results = model.evaluate(data_x, {'cell_activations': labels_one_hot, 'output': data_x}, verbose=verbose)
+
+    print("Test reconstruction loss:", round(results[2], 8))
+    print("Test prediction accuracy:", round(results[3] * 100, 3), "%")
+
+    return results
