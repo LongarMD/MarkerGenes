@@ -8,7 +8,7 @@ from keras.activations import softmax
 from keras.losses import categorical_crossentropy
 from keras.engine.base_layer import InputSpec
 
-from tensorflow import multiply, convert_to_tensor
+from tensorflow import multiply, convert_to_tensor, float32
 
 
 def get_weight_mask(shape, by_cell_type, genes):
@@ -90,7 +90,7 @@ class Markers(Layer):
         self.input_spec = InputSpec(min_ndim=2)
         self.supports_masking = True
 
-        weight_mask = convert_to_tensor(transpose(weight_mask), dtype=tf.float32)
+        weight_mask = convert_to_tensor(transpose(weight_mask), dtype=float32)
         self.weight_mask = weight_mask
 
     def build(self, input_shape):
