@@ -80,6 +80,7 @@ def plot_model_history(history):
 
     plt.show()
 
+
 def plot_activation_distribution(cell_activations, markers, title=''):
     """
     Plots the average cell type activation.
