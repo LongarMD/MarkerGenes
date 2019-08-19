@@ -68,7 +68,7 @@ def test_model(model, data_x, data_y, markers, aliases, verbose=0):
     labels_one_hot = backend.one_hot_encode(data_y, markers, aliases)
     results = model.evaluate(data_x, labels_one_hot, verbose=verbose)
 
-    print("Test reconstruction loss:", round(results[0], 8))
+    print("Test prediction loss:", round(results[0], 8))
     print("Test prediction accuracy:", round(results[1] * 100, 3), "%")
 
     return results
@@ -96,7 +96,7 @@ def plot_model_history(history):
         val_accuracy = history.history['val_acc']
         val_accuracy = [i * 100 for i in val_accuracy]
 
-        ax1.plot(epochs, val_output_loss, 'r--', label='Validation reconstruction loss')
+        ax1.plot(epochs, val_output_loss, 'r--', label='Validation prediction loss')
         ax1.set_title('Training and validation loss')
 
         ax2.plot(epochs, val_accuracy, 'g-', label='Validation accuracy')
