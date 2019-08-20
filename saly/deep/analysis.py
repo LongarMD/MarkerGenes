@@ -184,6 +184,55 @@ def draw_embedding(x, y, model, colours=None, alpha=1.0, graph_title=''):
     plt.show()
 
 
+def compare_embeddings(data_1, data_2, model, colours=None, alpha=1.0, graph_titles=None):
+    """
+    Draws a scatter plot of the provided embedding model
+    :param data_1: First data set -- list of the data's x and y
+    :param data_2: Second data set -- list of data's x and y
+    :param model: embedder e.g. tSNE or PCA
+    :param colours: label colours
+    :param alpha: Node alpha
+    :param graph_titles: list of graph titles
+    """
+    x1, y1 = data_1[0], data_1[1]
+    x2, y2 = data_2[0], data_2[1]
+
+    if colours is None:
+        colours = get_label_colours(y1.append(y2))
+
+    model_out_1 = model.fit_transform(x1)
+    model_out_2 = model.fit_transform(x2)
+
+    fig, (ax1, ax2) = plt.subplots(ncols=2, sharex=True, sharey=True, figsize=(16, 16), dpi=120)
+    ax1.set(aspect='equal')
+    ax2.set(aspect='equal')
+
+    for i, point in enumerate(model_out_1):
+        ax1.scatter(point[0], point[1], color=colours[y1.iloc[i]], label=y1.iloc[i],
+                    alpha=alpha, edgecolors='black', linewidths=1.0)
+    for i, point in enumerate(model_out_2):
+        ax2.scatter(point[0], point[1], color=colours[y2.iloc[i]], label=y2.iloc[i],
+                    alpha=alpha, edgecolors='black', linewidths=1.0)
+
+    # Create a legend
+    plt_handles, plt_labels = plt.gca().get_legend_handles_labels()
+    handles, labels = S.get_graph_labels(plt_handles, plt_labels)
+
+    for handle in handles:
+        handle.set_alpha(1.0)
+
+    fig.legend(handles, labels, ncol=len(labels), loc=8, bbox_to_anchor=(0.425, 0.1))
+
+    ax1.set_title(graph_titles[0])
+    ax1.set_axis_off()
+
+    ax2.set_title(graph_titles[1])
+    ax2.set_axis_off()
+
+    plt.subplots_adjust(bottom=0., hspace=0., wspace=0.25)
+    plt.show()
+
+
 def draw_comparison(old, new, model, colours=None, graph_title=''):
     """
     Draws a combined graph using both data sets
