@@ -216,7 +216,7 @@ def compare_embeddings(data_1, data_2, model, colours=None, alpha=1.0, graph_tit
 
     # Create a legend
     plt_handles, plt_labels = plt.gca().get_legend_handles_labels()
-    handles, labels = S.get_graph_labels(plt_handles, plt_labels)
+    handles, labels = backend.get_graph_labels(plt_handles, plt_labels)
 
     for handle in handles:
         handle.set_alpha(1.0)
