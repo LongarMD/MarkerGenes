@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
-from numpy import concatenate, mean, transpose, zeros, arange, newaxis
+from numpy import concatenate, mean, transpose, zeros, arange, newaxis, isnan
 from seaborn import distplot
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_curve, auc
+from scipy.special import softmax
 from pandas import Series
 
 from .. import backend
@@ -322,3 +323,43 @@ def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
                     ha="center", va="center",
                     color="white" if cm[i, j] > thresh else "black")
     fig.tight_layout()
+
+
+def get_average_auc(labels, cell_activations, markers, aliases, draw=False):
+    """
+    Returns the average ROC AUC score and, if defined, draws an ROC graph for each class.
+    """
+    probs = softmax(cell_activations)
+
+    by_type = backend.sort_markers_by_type(markers)
+    types = list(by_type.keys())
+    y_true = backend.one_hot_encode(labels, markers, aliases)
+
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    n_classes = len(types)
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_true[:, i], probs[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+
+    n = 0
+    used = []
+    for i in range(n_classes):
+        score = roc_auc[i]
+
+        if isnan(score) == False:
+            n += 1
+            used.append(score)
+            if draw:
+                plt.figure()
+                plt.plot(fpr[i], tpr[i], label='ROC curve (area = %0.2f)' % score)
+                plt.plot([0, 1], [0, 1], 'k--')
+                plt.xlim([0.0, 1.0])
+                plt.ylim([0.0, 1.05])
+                plt.xlabel('False Positive Rate')
+                plt.ylabel('True Positive Rate')
+                plt.title('Receiver operating characteristic example')
+                plt.legend(loc="lower right")
+                plt.show()
+    print("Average ROC AUC:", round(sum(used) / n, 3))
