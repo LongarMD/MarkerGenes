@@ -232,7 +232,6 @@ def compare_embeddings(data_1, data_2, model, colours=None, alpha=1.0, graph_tit
     ax2.set_title(graph_titles[1])
     ax2.set_axis_off()
 
-    fig.tight_layout()
     plt.subplots_adjust(bottom=0., hspace=0., wspace=0.25)
     plt.show()
 
@@ -286,7 +285,7 @@ def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
         if normalize:
             title = 'Normalized confusion matrix'
         else:
-            title = 'Confusion matrix, without normalization'
+            title = 'Confusion matrix'
 
     cell_types = backend.get_cell_types(markers)
     top_activations = backend.get_top_activated_indices(1, cell_type_activations)
@@ -301,7 +300,7 @@ def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, newaxis]
 
-    fig, ax = plt.subplots(figsize=(7, 7), dpi=80)
+    fig, ax = plt.subplots(figsize=(6, 6), dpi=80)
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.figure.colorbar(im, ax=ax)
 
