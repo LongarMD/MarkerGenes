@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
-from numpy import concatenate, mean, transpose, zeros
+from numpy import concatenate, mean, transpose, zeros, arange, newaxis
 from seaborn import distplot
+from sklearn.metrics import confusion_matrix
+from pandas import Series
 
 from .. import backend
 
@@ -229,6 +231,7 @@ def compare_embeddings(data_1, data_2, model, colours=None, alpha=1.0, graph_tit
     ax2.set_title(graph_titles[1])
     ax2.set_axis_off()
 
+    fig.tight_layout()
     plt.subplots_adjust(bottom=0., hspace=0., wspace=0.25)
     plt.show()
 
@@ -270,3 +273,52 @@ def draw_comparison(old, new, model, colours=None, graph_title=''):
     plt.title(graph_title)
     plt.axis('off')
     plt.show()
+
+
+def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
+                          normalize=False, title=None, cmap=plt.cm.Greens):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if not title:
+        if normalize:
+            title = 'Normalized confusion matrix'
+        else:
+            title = 'Confusion matrix, without normalization'
+
+    cell_types = backend.get_cell_types(markers)
+    top_activations = backend.get_top_activated_indices(1, cell_type_activations)
+
+    predictions = backend.index_to_cell_type(top_activations, cell_types)
+    predictions = Series([p[0] for p in predictions])
+
+    y_true = y_true.apply(lambda x: aliases[x] if x in aliases.keys() else x)
+    unique_classes = y_true.append(predictions).unique()
+
+    cm = confusion_matrix(y_true, predictions)
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, newaxis]
+
+    fig, ax = plt.subplots(figsize=(7, 7), dpi=80)
+    im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    ax.figure.colorbar(im, ax=ax)
+
+    ax.set(xticks=arange(cm.shape[1]),
+           yticks=arange(cm.shape[0]),
+           xticklabels=unique_classes, yticklabels=unique_classes,
+           title=title,
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
