@@ -36,15 +36,22 @@ def get_data_splits(n: int, train: float, validation: float, test: float) -> (in
     return train_index, validation_index, test_index
 
 
-def shuffle_data(data: DataFrame, labels: Series) -> (DataFrame, Series):
+def shuffle_data(data: DataFrame, labels: Series, axis=0) -> (DataFrame, Series):
     """
-    Shuffles the given data.
+    Shuffles the given data on the given axis.
     :param data: DataFrame to shuffle
     :param labels: Series to shuffle
+    :param axis: row (0) or column (1)
     :return: shuffled DataFrame and Series
     """
-    idx = permutation(data.index)
-    data = data.reindex(idx)
-    labels = labels.reindex(idx)
+    if axis == 0:
+        idx = permutation(data.index)
+        data = data.reindex(idx)
+        labels = labels.reindex(idx)
+    elif axis == 1:
+        idx = permutation(data.columns.index)
+        data = data.reindex(idx, axis=1)
+    else:
+        return
 
     return data, labels

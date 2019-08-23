@@ -300,7 +300,7 @@ def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, newaxis]
 
-    fig, ax = plt.subplots(figsize=(6, 6), dpi=80)
+    fig, ax = plt.subplots(figsize=(7, 7), dpi=80)
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.figure.colorbar(im, ax=ax)
 
