@@ -5,6 +5,7 @@ from keras.models import Model
 
 from saly.backend import Markers
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -26,6 +27,37 @@ def build_model(data, markers, optimizer='adam'):
     marker_dim = len(by_type)
 
     weight_mask = backend.get_weight_mask(by_cell_type=by_type, shape=(marker_dim, input_dim), genes=data.columns)
+    # -- Model --
+    input_layer = Input(shape=(input_dim,))
+    marker_layer = Markers(marker_dim, weight_mask=weight_mask,
+                           activation='softmax', name='cell_activations')(input_layer)
+    # --------
+    marker_model = Model(input_layer, marker_layer)
+    marker_model.compile(loss='categorical_crossentropy', optimizer=optimizer,
+                         metrics=['accuracy'])
+
+
+    return marker_model
+
+
+def build_dense(data, markers, optimizer='adam'):
+    """
+    Builds the AutoEncoder model.
+    :param data: DataFrame to train/test on
+    :param markers: list of used markers
+    :param bottleneck_dim: number of bottleneck nodes
+    :param intermediate_dim: number of dense layer nodes
+    :param dropout_n: dropout rate (from 0 to 1.0)
+    :param activation: activation function
+    :param loss: loss function
+    :param optimizer: optimizer function
+    :return: AutoEncoder, marker and encoder models
+    """
+    by_type = backend.sort_markers_by_type(markers)
+    input_dim = data.shape[1]
+    marker_dim = len(by_type)
+
+    weight_mask = np.ones(shape=(marker_dim, input_dim))
     # -- Model --
     input_layer = Input(shape=(input_dim,))
     marker_layer = Markers(marker_dim, weight_mask=weight_mask,
