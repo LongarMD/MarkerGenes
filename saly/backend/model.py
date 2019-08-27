@@ -78,7 +78,7 @@ class Markers(Layer):
 
     def __init__(self, units, weight_mask,
                  activation=None,
-                 use_bias=False,
+                 use_bias=True,
                  kernel_initializer='ones',
                  bias_initializer='ones',
                  kernel_regularizer=None,
