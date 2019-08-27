@@ -37,10 +37,11 @@ def get_results(labels: list, cell_activations: list, markers: list, aliases: di
     print("Correct predictions: {c} out of {n} ({p}%)".format(c=correct, n=n, p=round(100 * (correct / n), 2)))
 
 
-def plot_model_history(history):
+def plot_model_history(history, supervised=False):
     """
     Draws a model's training history.
     :param history: a Keras history object
+    :param supervised: was the model supervised
     """
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='all', figsize=(7, 7), dpi=80)
     output_loss = history.history['output_loss']
@@ -49,11 +50,13 @@ def plot_model_history(history):
     accuracy = history.history['cell_activations_marker_prediction_metric']
     accuracy = [i * 100 for i in accuracy]
 
-    marker_loss = history.history['cell_activations_loss']
     epochs = range(1, len(output_loss) + 1)
 
+    if supervised:
+        marker_loss = history.history['cell_activations_loss']
+        ax1.plot(epochs, marker_loss, 'b-,', label='Cell type prediction loss')
+
     ax1.plot(epochs, output_loss, 'b--', label='Reconstruction loss')
-    ax1.plot(epochs, marker_loss, 'b-,', label='Cell type prediction loss')
     ax2.plot(epochs, accuracy, 'g--', label='Training accuracy')
 
     if 'val_loss' in history.history.keys():
@@ -63,10 +66,11 @@ def plot_model_history(history):
         val_accuracy = history.history['val_cell_activations_marker_prediction_metric']
         val_accuracy = [i * 100 for i in val_accuracy]
 
-        val_marker_loss = history.history['val_cell_activations_loss']
+        if supervised:
+            val_marker_loss = history.history['val_cell_activations_loss']
+            ax1.plot(epochs, val_marker_loss, 'r-', label='Validation cell type prediction loss')
 
         ax1.plot(epochs, val_output_loss, 'r--', label='Validation reconstruction loss')
-        ax1.plot(epochs, val_marker_loss, 'r-', label='Validation cell type prediction loss')
         ax1.set_title('Training and validation loss')
 
         ax2.plot(epochs, val_accuracy, 'g-', label='Validation accuracy')
@@ -80,30 +84,6 @@ def plot_model_history(history):
     plt.xlabel('Epochs')
     ax1.legend()
     ax2.legend()
-
-    plt.show()
-
-
-def plot_model_history_lossless(history):
-    """
-    Draws a model's training history.
-    :param history: a Keras history object
-    """
-    loss = history.history['loss']
-    epochs = range(1, len(loss) + 1)
-
-    plt.plot(epochs, loss, 'bo', label='Training loss')
-
-    if 'val_loss' in history.history.keys():
-        val_loss = history.history['val_loss']
-        plt.plot(epochs, val_loss, 'b', label='Validation loss', c='orange')
-        plt.title('Training and validation loss per epoch')
-    else:
-        plt.title('Training loss per epoch')
-
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
 
     plt.show()
 
