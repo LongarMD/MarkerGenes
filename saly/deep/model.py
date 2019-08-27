@@ -49,6 +49,41 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     return autoencoder_model, marker_model, encoder_model
 
 
+def train_model(model, data, labels, markers, marker_aliases, epochs,
+                validation_data=None, batch_size=256, verbose=1, callbacks=None):
+    """
+    Trains the Keras model.
+    :return: a Keras train history object
+    """
+    if validation_data is not None:
+        validation_labels = validation_data[1]
+        val_labels_one_hot = backend.one_hot_encode(validation_labels, markers, marker_aliases)
+        validation_data = (validation_data[0], {'cell_activations': val_labels_one_hot, 'output': validation_data[0]})
+
+    labels_one_hot = backend.one_hot_encode(labels, markers, marker_aliases)
+    history = model.fit(data, {'cell_activations': labels_one_hot, 'output': data},
+                        epochs=epochs, batch_size=batch_size,
+                        validation_data=validation_data,
+                        callbacks=callbacks,
+                        verbose=verbose)
+
+    return history
+
+
+def test_model(model, data_x, data_y, markers, aliases, verbose=0):
+    """
+    Evaluates the model on the given data
+    :return: the data's loss score
+    """
+    labels_one_hot = backend.one_hot_encode(data_y, markers, aliases)
+    results = model.evaluate(data_x, {'cell_activations': labels_one_hot, 'output': data_x}, verbose=verbose)
+
+    print("Test reconstruction loss:", round(results[2], 8))
+    print("Test prediction accuracy:", round(results[3] * 100, 3), "%")
+
+    return results
+
+
 def build_model_lossless(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_n=0.1,
                 activation='relu', loss='mse', optimizer='adam'):
     """
@@ -91,19 +126,15 @@ def build_model_lossless(data, markers, bottleneck_dim=25, intermediate_dim=100,
     return autoencoder_model, marker_model, encoder_model
 
 
-def train_model(model, data, labels, markers, marker_aliases, epochs,
-                validation_data=None, batch_size=256, verbose=1, callbacks=None):
+def train_model_lossless(model, data, epochs, validation_data=None, batch_size=256, verbose=1, callbacks=None):
     """
     Trains the Keras model.
     :return: a Keras train history object
     """
     if validation_data is not None:
-        validation_labels = validation_data[1]
-        val_labels_one_hot = backend.one_hot_encode(validation_labels, markers, marker_aliases)
-        validation_data = (validation_data[0], {'cell_activations': val_labels_one_hot, 'output': validation_data[0]})
+        validation_data = (validation_data, validation_data)
 
-    labels_one_hot = backend.one_hot_encode(labels, markers, marker_aliases)
-    history = model.fit(data, {'cell_activations': labels_one_hot, 'output': data},
+    history = model.fit(data, data,
                         epochs=epochs, batch_size=batch_size,
                         validation_data=validation_data,
                         callbacks=callbacks,
@@ -112,15 +143,10 @@ def train_model(model, data, labels, markers, marker_aliases, epochs,
     return history
 
 
-def test_model(model, data_x, data_y, markers, aliases, verbose=0):
+def test_model_lossless(model, test_data, verbose=0):
     """
     Evaluates the model on the given data
     :return: the data's loss score
     """
-    labels_one_hot = backend.one_hot_encode(data_y, markers, aliases)
-    results = model.evaluate(data_x, {'cell_activations': labels_one_hot, 'output': data_x}, verbose=verbose)
-
-    print("Test reconstruction loss:", round(results[2], 8))
-    print("Test prediction accuracy:", round(results[3] * 100, 3), "%")
-
-    return results
+    loss = model.evaluate(test_data, test_data, verbose=verbose)
+    return loss
