@@ -63,7 +63,10 @@ def marker_loss(y_true, y_pred):
 
 
 def null_loss(y_true, y_pred):
-    return 0
+    """
+    An empty loss function.
+    """
+    return 0 * y_true
 
 
 def marker_prediction_metric(y_true, y_pred):
