@@ -62,6 +62,10 @@ def marker_loss(y_true, y_pred):
     return categorical_crossentropy(y_true, probabilities)
 
 
+def null_loss(y_true, y_pred):
+    return 0
+
+
 def marker_prediction_metric(y_true, y_pred):
     probabilities = softmax(y_pred)
     return categorical_accuracy(y_true, probabilities)

@@ -46,7 +46,7 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
                                   metrics={'cell_activations': backend.marker_prediction_metric},
                                   optimizer=optimizer)
     else:
-        autoencoder_model.compile(loss={'output': loss},
+        autoencoder_model.compile(loss={'cell_activations': backend.null_loss, 'output': loss},
                                   metrics={'cell_activations': backend.marker_prediction_metric},
                                   optimizer=optimizer)
     marker_model.compile(loss=loss, optimizer=optimizer)

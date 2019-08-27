@@ -15,6 +15,7 @@ from .model import Markers
 from .model import get_weight_mask
 from .model import one_hot_encode
 from .model import marker_loss
+from .model import null_loss
 from .model import marker_prediction_metric
 from .preprocessing import from_log10
 from .preprocessing import get_data_splits
