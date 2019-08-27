@@ -8,6 +8,18 @@ from pandas import Series
 from .. import backend
 
 
+def get_predictions(cell_activations, markers):
+    """
+    Returns the predicted classes.
+    """
+    cell_types = backend.get_cell_types(markers)
+
+    top_activations = backend.get_top_activated_indices(1, cell_activations)
+    predictions = backend.index_to_cell_type(top_activations, cell_types)
+
+    return [prediction[0] for prediction in predictions]
+
+
 def get_results(labels: list, cell_activations: list, markers: list, aliases: dict) -> None:
     """
     Compares the real labels to the cell type activations.
@@ -16,16 +28,13 @@ def get_results(labels: list, cell_activations: list, markers: list, aliases: di
     :param markers: list of used markers
     :param aliases: dict of `label : name_in_marker_db` aliases
     """
-    cell_types = backend.get_cell_types(markers)
 
-    top_activations = backend.get_top_activated_indices(1, cell_activations)
-    predictions = backend.index_to_cell_type(top_activations, cell_types)
+    predictions = get_predictions(cell_activations, markers)
 
     correct = 0
     n = len(cell_activations)
     for i, prediction in enumerate(predictions):
         label = labels[i]
-        prediction = prediction[0]  # because predictions is a 2D array
 
         if prediction == label:
             correct += 1
@@ -298,7 +307,7 @@ def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
     predictions = Series([p[0] for p in predictions])
 
     y_true = y_true.apply(lambda x: aliases[x] if x in aliases.keys() else x)
-    unique_classes = y_true.append(predictions).unique()
+    unique_classes = sorted(y_true.append(predictions).unique())
 
     cm = confusion_matrix(y_true, predictions)
     if normalize:
