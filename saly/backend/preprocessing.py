@@ -52,6 +52,6 @@ def shuffle_data(data: DataFrame, labels: Series, axis=0) -> (DataFrame, Series)
         idx = permutation(data.columns.index)
         data = data.reindex(idx, axis=1)
     else:
-        return
+        raise ValueError("Axis must be 0 or 1; given ", axis)
 
     return data, labels

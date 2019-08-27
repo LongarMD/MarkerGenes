@@ -347,7 +347,7 @@ def get_average_auc(labels, cell_activations, markers, aliases, draw=False):
     for i in range(n_classes):
         score = roc_auc[i]
 
-        if isnan(score) == False:
+        if not isnan(score):
             n += 1
             used.append(score)
             if draw:
