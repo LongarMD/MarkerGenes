@@ -80,7 +80,7 @@ class Markers(Layer):
                  activation=None,
                  use_bias=True,
                  kernel_initializer='ones',
-                 bias_initializer='zeros',
+                 bias_initializer='ones',
                  kernel_regularizer=None,
                  bias_regularizer=None,
                  activity_regularizer=None,
