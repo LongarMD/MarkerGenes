@@ -1,6 +1,7 @@
 from .. import backend
 from ..backend import Markers
 from keras.layers import Input, Dense, Dropout
+from keras.initializers import RandomNormal
 from keras.models import Model
 
 
@@ -26,8 +27,9 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     weight_mask = backend.get_weight_mask(by_cell_type=by_type, shape=(marker_dim, input_dim), genes=data.columns)
     # -- Model --
     input_layer = Input(shape=(input_dim,))
-    marker_layer = Markers(marker_dim, weight_mask=weight_mask,
-                           activation=activation, name='cell_activations')(input_layer)
+    dense_input = Dense(input_dim, activation=activation)(input_layer)
+    marker_layer = Markers(marker_dim, weight_mask=weight_mask, use_bias=False, kernel_initializer='ones',
+                           activation=activation, name='cell_activations')(dense_input)
 
     dense_in_1 = Dense(intermediate_dim, activation=activation)(marker_layer)
     bottleneck_layer = Dense(bottleneck_dim, activation=activation, name='Bottleneck')(dense_in_1)
@@ -42,11 +44,12 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
 
     if supervised:
         autoencoder_model.compile(loss={'cell_activations': backend.marker_loss, 'output': loss},
-                                  loss_weights={'cell_activations': 1., 'output': 100.0},
+                                  loss_weights={'cell_activations': 1., 'output': 100.},
                                   metrics={'cell_activations': backend.marker_prediction_metric},
                                   optimizer=optimizer)
     else:
         autoencoder_model.compile(loss={'cell_activations': backend.null_loss, 'output': loss},
+				  loss_weights={'cell_activations': 1., 'output': 1000.},
                                   metrics={'cell_activations': backend.marker_prediction_metric},
                                   optimizer=optimizer)
     marker_model.compile(loss=loss, optimizer=optimizer)

@@ -54,7 +54,6 @@ def plot_model_history(history, supervised=False):
     """
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex='all', figsize=(7, 7), dpi=80)
     output_loss = history.history['output_loss']
-    output_loss = [i * 100 for i in output_loss]
 
     accuracy = history.history['cell_activations_marker_prediction_metric']
     accuracy = [i * 100 for i in accuracy]
@@ -62,6 +61,7 @@ def plot_model_history(history, supervised=False):
     epochs = range(1, len(output_loss) + 1)
 
     if supervised:
+        output_loss = [i * 100 for i in output_loss]
         marker_loss = history.history['cell_activations_loss']
         ax1.plot(epochs, marker_loss, 'b-,', label='Cell type prediction loss')
 
@@ -70,12 +70,12 @@ def plot_model_history(history, supervised=False):
 
     if 'val_loss' in history.history.keys():
         val_output_loss = history.history['val_output_loss']
-        val_output_loss = [i * 100 for i in val_output_loss]
 
         val_accuracy = history.history['val_cell_activations_marker_prediction_metric']
         val_accuracy = [i * 100 for i in val_accuracy]
 
         if supervised:
+            val_output_loss = [i * 100 for i in val_output_loss]
             val_marker_loss = history.history['val_cell_activations_loss']
             ax1.plot(epochs, val_marker_loss, 'r-', label='Validation cell type prediction loss')
 
