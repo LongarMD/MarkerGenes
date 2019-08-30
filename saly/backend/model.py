@@ -74,7 +74,7 @@ def marker_prediction_metric(y_true, y_pred):
     return categorical_accuracy(y_true, probabilities)
 
 
-class Markers(Layer):
+class Partial(Layer):
 
     def __init__(self, units, weight_mask,
                  activation=None,
@@ -89,7 +89,7 @@ class Markers(Layer):
                  **kwargs):
         if 'input_shape' not in kwargs and 'input_dim' in kwargs:
             kwargs['input_shape'] = (kwargs.pop('input_dim'),)
-        super(Markers, self).__init__(**kwargs)
+        super(Partial, self).__init__(**kwargs)
         self.units = units
         self.activation = activations.get(activation)
         self.use_bias = use_bias
@@ -156,5 +156,5 @@ class Markers(Layer):
             'kernel_constraint': constraints.serialize(self.kernel_constraint),
             'bias_constraint': constraints.serialize(self.bias_constraint)
         }
-        base_config = super(Markers, self).get_config()
+        base_config = super(Partial, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
