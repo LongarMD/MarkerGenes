@@ -1,4 +1,4 @@
-from backend import sort_markers_by_type
+from .data import sort_markers_by_type
 
 import numpy as np
 from keras import backend as K
