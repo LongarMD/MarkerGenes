@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from numpy import concatenate, mean, transpose, zeros, arange, newaxis, isnan
+from numpy import concatenate, mean, transpose, zeros, arange, newaxis, isnan, log2
 from seaborn import distplot
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 from scipy.special import softmax
@@ -8,7 +8,7 @@ from pandas import Series
 from .. import backend
 
 
-def plot_marker_genes(markers):
+def plot_marker_genes(markers, partially_dense=False):
     """
     Draws a bar chart of marker genes per cell type.
     """
@@ -17,6 +17,8 @@ def plot_marker_genes(markers):
     hist_data = []
     for i, cell_type in enumerate(by_type):
         gene_n = len(by_type[cell_type])
+        if partially_dense:
+            gene_n = int(log2(gene_n))
         hist_data.append(gene_n)
 
     hist_mean = mean(hist_data)
@@ -25,8 +27,12 @@ def plot_marker_genes(markers):
 
     plt.bar(ticks, hist_data, width=1.0)
     plt.axhline(hist_mean, c='r', label='Mean ({0})'.format(int(hist_mean)))
-    plt.title('Number of marker genes per cell type')
     plt.legend()
+
+    title = 'Number of marker genes per cell type'
+    if partially_dense:
+        title = 'Number of nodes in the partially dense layer per cell type'
+    plt.title(title)
 
 
 def get_predictions(cell_activations, markers):
