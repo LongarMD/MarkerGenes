@@ -44,6 +44,26 @@ def get_mutual_markers(gene_sets: list, markers_db: list) -> list:
     return list(mutual)
 
 
+def drop_cell_types(n, markers):
+    """
+    Removes every cell type with less <= n used marker genes
+    """
+    by_type = backend.sort_markers_by_type(markers)
+    types_to_drop = []
+    for i, cell_type in enumerate(by_type):
+        gene_n = len(by_type[cell_type])
+        if gene_n <= n:
+            types_to_drop.append(cell_type)
+
+    to_drop = []
+    for marker in markers:
+        c_type = marker[2]
+        if c_type in types_to_drop:
+            to_drop.append(marker)
+
+    return [marker for marker in markers if marker not in to_drop]
+
+
 def drop_rows(data: DataFrame, labels: Series, row_names: list) -> (DataFrame, Series):
     """
     :param data: The DataFrame to modify

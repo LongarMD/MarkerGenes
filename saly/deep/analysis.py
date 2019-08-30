@@ -10,7 +10,7 @@ from .. import backend
 
 def plot_marker_genes(markers):
     """
-    Draws a bar chart of marker genes per cell type
+    Draws a bar chart of marker genes per cell type.
     """
     by_type = backend.sort_markers_by_type(markers)
 
