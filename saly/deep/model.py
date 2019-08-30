@@ -23,10 +23,13 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     input_dim = data.shape[1]
     marker_dim = len(by_type)
 
-    weight_mask = backend.get_weight_mask(by_cell_type=by_type, shape=(marker_dim, input_dim), genes=data.columns)
+    weight_mask = backend.get_marker_mask(by_cell_type=by_type, shape=(marker_dim, input_dim), genes=data.columns)
+    partially_dense_mask = backend.get_partially_dense_mask(by_cell_type=by_type, genes=data.columns)
+
     # -- Model --
     input_layer = Input(shape=(input_dim,))
-    partial_input = Dense(input_dim, activation=activation)(input_layer)
+    partial_input = Partial(input_dim, weight_mask=partially_dense_mask, use_bias=True, kernel_initializer='ones',
+                            activation=activation)(input_layer)
     marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=False, kernel_initializer='ones',
                            activation=activation, name='cell_activations')(partial_input)
 

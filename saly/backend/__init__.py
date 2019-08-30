@@ -12,12 +12,14 @@ from .data import get_used_genes
 from .data import get_used_markers
 from .data import sort_markers_by_type
 from .model import Partial
-from .model import get_weight_mask
+from .model import get_marker_mask
 from .model import one_hot_encode
 from .model import marker_loss
 from .model import null_loss
 from .model import marker_prediction_metric
+from .model import get_partially_dense_mask
 from .preprocessing import from_log10
 from .preprocessing import get_data_splits
 from .preprocessing import log_10
 from .preprocessing import shuffle_data
+from .utility import *

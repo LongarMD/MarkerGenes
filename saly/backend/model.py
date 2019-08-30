@@ -1,6 +1,6 @@
-from saly.backend import sort_markers_by_type
+from backend import sort_markers_by_type
 
-from numpy import zeros, transpose
+import numpy as np
 from keras import backend as K
 from keras.layers import Layer
 from keras import activations, initializers, regularizers, constraints
@@ -12,15 +12,70 @@ from keras.engine.base_layer import InputSpec
 from tensorflow import multiply, convert_to_tensor, float32
 
 
+def get_partially_dense_size(by_type):
+    """
+    Returns the number of nodes in the partially dense layer.
+    """
+    nodes = []
+    for i, cell_type in enumerate(by_type):
+        gene_n = len(by_type[cell_type])
+        gene_n = round(np.log2(gene_n))
+        nodes.append(gene_n)
+
+    return int(np.sum(nodes))
+
+
+def get_partially_dense_mask(by_cell_type, genes):
+    """
+    Creates a binary mask for the partially dense layer.
+    """
+    node_dim = get_partially_dense_size(by_cell_type)
+    mask = np.zeros(shape=(node_dim, len(genes)))
+
+    i = 0
+    for cell_type in by_cell_type:
+        marker_genes = by_cell_type[cell_type]
+        N = len(marker_genes)
+        n = round(np.log2(N))
+
+        for node in range(n):
+            for gene in by_cell_type[cell_type]:
+                gene_index = genes.get_loc(gene)
+                mask[i][gene_index] = 1.0
+            i += 1
+
+    return mask
+
+
+def get_marker_mask(by_cell_type):
+    """
+    Creates a binary mask for the marker layer
+    :param by_cell_type: Markers sorted by cell type
+    """
+    node_dim = get_partially_dense_size(by_cell_type)
+    mask = np.zeros(shape=(len(by_cell_type), node_dim))
+
+    i = 0
+    for c, cell_type in enumerate(by_cell_type):
+        marker_genes = by_cell_type[cell_type]
+        N = len(marker_genes)
+        n = round(np.log2(N))
+
+        for node in range(n):
+            mask[c][i] = 1.0
+            i += 1
+    return mask
+
+
 def get_weight_mask(shape, by_cell_type, genes):
     """
-    Creates a binary matrix
+    Deprecated.
+    Creates a binary mask for the marker layer
     :param shape: shape of the matrix (n of cell types, n of genes)
     :param by_cell_type: Markers sorted by cell type
     :param genes: list of used genes (in the same order as in the data)
-    :return: binary matrix
     """
-    mask = zeros(shape=shape)
+    mask = np.zeros(shape=shape)
     for i, cell_type in enumerate(by_cell_type):
         for gene in by_cell_type[cell_type]:
             gene_index = genes.get_loc(gene)
@@ -38,7 +93,7 @@ def one_hot_encode(labels, markers, aliases):
     by_type = sort_markers_by_type(markers)
     types = list(by_type.keys())
 
-    one_hot = zeros(shape=(len(labels), len(by_type)))
+    one_hot = np.zeros(shape=(len(labels), len(by_type)))
     for i, label in enumerate(labels):
         if label in types:
             label_index = types.index(label)
@@ -103,7 +158,7 @@ class Partial(Layer):
         self.input_spec = InputSpec(min_ndim=2)
         self.supports_masking = True
 
-        weight_mask = convert_to_tensor(transpose(weight_mask), dtype=float32)
+        weight_mask = convert_to_tensor(np.transpose(weight_mask), dtype=float32)
         self.weight_mask = weight_mask
 
     def build(self, input_shape):
