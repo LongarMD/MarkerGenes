@@ -8,6 +8,27 @@ from pandas import Series
 from .. import backend
 
 
+def plot_marker_genes(markers):
+    """
+    Draws a bar chart of marker genes per cell type
+    """
+    by_type = backend.sort_markers_by_type(markers)
+
+    hist_data = []
+    for i, cell_type in enumerate(by_type):
+        gene_n = len(by_type[cell_type])
+        hist_data.append(gene_n)
+
+    hist_mean = mean(hist_data)
+    hist_data = sorted(hist_data, reverse=True)
+    ticks = list(range(len(by_type)))
+
+    plt.bar(ticks, hist_data, width=1.0)
+    plt.axhline(hist_mean, c='r', label='Mean ({0})'.format(int(hist_mean)))
+    plt.title('Number of marker genes per cell type')
+    plt.legend()
+
+
 def get_predictions(cell_activations, markers):
     """
     Returns the predicted classes.
