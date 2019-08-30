@@ -26,9 +26,9 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     weight_mask = backend.get_weight_mask(by_cell_type=by_type, shape=(marker_dim, input_dim), genes=data.columns)
     # -- Model --
     input_layer = Input(shape=(input_dim,))
-    partial_input = Partial(input_dim, activation=activation)(input_layer)
+    partial_input = Dense(input_dim, activation=activation)(input_layer)
     marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=False, kernel_initializer='ones',
-                           activation=activation, name='cell_activations')(dense_input)
+                           activation=activation, name='cell_activations')(partial_input)
 
     dense_in_1 = Dense(intermediate_dim, activation=activation)(marker_layer)
     bottleneck_layer = Dense(bottleneck_dim, activation=activation, name='Bottleneck')(dense_in_1)
