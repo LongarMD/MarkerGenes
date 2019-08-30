@@ -18,7 +18,7 @@ def plot_marker_genes(markers, partially_dense=False):
     for i, cell_type in enumerate(by_type):
         gene_n = len(by_type[cell_type])
         if partially_dense:
-            gene_n = int(log2(gene_n))
+            gene_n = round(log2(gene_n))
         hist_data.append(gene_n)
 
     hist_mean = mean(hist_data)
