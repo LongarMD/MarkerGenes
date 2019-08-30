@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from numpy import concatenate, mean, transpose, zeros, arange, newaxis, isnan, log2
+import numpy as np
 from seaborn import distplot
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 from scipy.special import softmax
@@ -18,20 +18,21 @@ def plot_marker_genes(markers, partially_dense=False):
     for i, cell_type in enumerate(by_type):
         gene_n = len(by_type[cell_type])
         if partially_dense:
-            gene_n = round(log2(gene_n))
+            gene_n = round(np.log2(gene_n))
         hist_data.append(gene_n)
 
-    hist_mean = mean(hist_data)
+    hist_mean = np.mean(hist_data)
     hist_data = sorted(hist_data, reverse=True)
     ticks = list(range(len(by_type)))
 
     plt.bar(ticks, hist_data, width=1.0)
-    plt.axhline(hist_mean, c='r', label='Mean ({0})'.format(int(hist_mean)))
+    plt.axhline(hist_mean, c='r', label='Mean ({0})'.format(int(np.round(hist_mean))))
     plt.legend()
 
     title = 'Number of marker genes per cell type'
     if partially_dense:
         title = 'Number of nodes in the partially dense layer per cell type'
+        title += '\nSize of partially-dense layer: {0}'.format(int(sum(hist_data)))
     plt.title(title)
 
 
@@ -138,7 +139,7 @@ def plot_activation_distribution(cell_activations, markers, title=''):
     for i, cell in enumerate(cell_activations):
         sorted_activations.append([cell[j] for j in sorted_indices[i]])
 
-    average = [mean(column) for column in transpose(sorted_activations)]
+    average = [np.mean(column) for column in np.transpose(sorted_activations)]
 
     distplot(average).set_title(title)
 
@@ -185,7 +186,7 @@ def get_top_activations(n, cell_activations):
     :param cell_activations: list of cell activations
     """
     top_indices = backend.get_top_activated_indices(n, cell_activations)
-    top_activations = [zeros(len(x)) for x in cell_activations]
+    top_activations = [np.zeros(len(x)) for x in cell_activations]
     for i, cell_indices in enumerate(top_indices):
         for type_index in cell_indices:
             top_activations[i][type_index] = cell_activations[i][type_index]
@@ -288,7 +289,7 @@ def draw_comparison(old, new, model, colours=None, graph_title=''):
     if colours is None:
         colours = get_label_colours(old[1])
 
-    x = concatenate((old[0], new[0]), axis=0)
+    x = np.concatenate((old[0], new[0]), axis=0)
     model_out = model.fit_transform(x)
 
     plt.figure(figsize=(8, 8), dpi=80)
@@ -338,14 +339,14 @@ def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
 
     cm = confusion_matrix(y_true, predictions)
     if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, newaxis]
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
     fig, ax = plt.subplots(figsize=(7, 7), dpi=80)
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.figure.colorbar(im, ax=ax)
 
-    ax.set(xticks=arange(cm.shape[1]),
-           yticks=arange(cm.shape[0]),
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
            xticklabels=unique_classes, yticklabels=unique_classes,
            title=title,
            ylabel='True label',
@@ -387,7 +388,7 @@ def get_average_auc(labels, cell_activations, markers, aliases, draw=False):
     for i in range(n_classes):
         score = roc_auc[i]
 
-        if not isnan(score):
+        if not np.isnan(score):
             n += 1
             used.append(score)
             if draw:
