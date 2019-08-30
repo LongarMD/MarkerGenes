@@ -36,7 +36,7 @@ def get_partially_dense_mask(by_cell_type, genes):
     for cell_type in by_cell_type:
         marker_genes = by_cell_type[cell_type]
         N = len(marker_genes)
-        n = round(np.log2(N))
+        n = int(round(np.log2(N)))
 
         for node in range(n):
             for gene in by_cell_type[cell_type]:
@@ -59,7 +59,7 @@ def get_marker_mask(by_cell_type):
     for c, cell_type in enumerate(by_cell_type):
         marker_genes = by_cell_type[cell_type]
         N = len(marker_genes)
-        n = round(np.log2(N))
+        n = int(round(np.log2(N)))
 
         for node in range(n):
             mask[c][i] = 1.0
