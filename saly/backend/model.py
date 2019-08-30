@@ -30,7 +30,7 @@ def get_partially_dense_mask(by_cell_type, genes):
     Creates a binary mask for the partially dense layer.
     """
     node_dim = get_partially_dense_size(by_cell_type)
-    mask = np.zeros(shape=(node_dim, len(genes)))
+    mask = np.zeros(shape=(len(genes), node_dim))
 
     i = 0
     for cell_type in by_cell_type:
@@ -41,7 +41,7 @@ def get_partially_dense_mask(by_cell_type, genes):
         for node in range(n):
             for gene in by_cell_type[cell_type]:
                 gene_index = genes.get_loc(gene)
-                mask[i][gene_index] = 1.0
+                mask[gene_index][i] = 1.0
             i += 1
 
     return mask
@@ -53,7 +53,7 @@ def get_marker_mask(by_cell_type):
     :param by_cell_type: Markers sorted by cell type
     """
     node_dim = get_partially_dense_size(by_cell_type)
-    mask = np.zeros(shape=(len(by_cell_type), node_dim))
+    mask = np.zeros(shape=(node_dim, len(by_cell_type)))
 
     i = 0
     for c, cell_type in enumerate(by_cell_type):
@@ -62,7 +62,7 @@ def get_marker_mask(by_cell_type):
         n = int(round(np.log2(N)))
 
         for node in range(n):
-            mask[c][i] = 1.0
+            mask[i][c] = 1.0
             i += 1
     return mask
 
