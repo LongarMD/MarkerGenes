@@ -158,7 +158,7 @@ class Partial(Layer):
         self.input_spec = InputSpec(min_ndim=2)
         self.supports_masking = True
 
-        weight_mask = convert_to_tensor(np.transpose(weight_mask), dtype=float32)
+        weight_mask = convert_to_tensor(weight_mask, dtype=float32)
         self.weight_mask = weight_mask
 
     def build(self, input_shape):
