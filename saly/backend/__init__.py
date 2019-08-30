@@ -18,6 +18,7 @@ from .model import marker_loss
 from .model import null_loss
 from .model import marker_prediction_metric
 from .model import get_partially_dense_mask
+from .model import get_partially_dense_size
 from .preprocessing import from_log10
 from .preprocessing import get_data_splits
 from .preprocessing import log_10

@@ -2,6 +2,7 @@ from .. import backend
 from ..backend import Partial
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model
+import numpy as np
 
 
 def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_n=0.1,
@@ -22,13 +23,14 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     by_type = backend.sort_markers_by_type(markers)
     input_dim = data.shape[1]
     marker_dim = len(by_type)
+    partial_dim = backend.get_partially_dense_size(by_type)
 
     partially_dense_mask = backend.get_partially_dense_mask(by_cell_type=by_type, genes=data.columns)
     weight_mask = backend.get_marker_mask(by_cell_type=by_type)
 
     # -- Model --
     input_layer = Input(shape=(input_dim,))
-    partial_input = Partial(input_dim, weight_mask=partially_dense_mask, use_bias=True,
+    partial_input = Partial(partial_dim, weight_mask=partially_dense_mask, use_bias=True,
                             activation=activation)(input_layer)
     marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=False, kernel_initializer='ones',
                            activation=activation, name='cell_activations')(partial_input)
