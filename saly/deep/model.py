@@ -30,9 +30,9 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
 
     # -- Model --
     input_layer = Input(shape=(input_dim,))
-    partial_input = Partial(partial_dim, weight_mask=partially_dense_mask, use_bias=False, kernel_initializer='ones',
+    partial_input = Partial(partial_dim, weight_mask=partially_dense_mask, use_bias=False,
                             activation=activation)(input_layer)
-    marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=False, kernel_initializer='ones',
+    marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=False,
                            activation=activation, name='cell_activations')(partial_input)
 
     dense_in_1 = Dense(intermediate_dim, activation=activation)(marker_layer)
