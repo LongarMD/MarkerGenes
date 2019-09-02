@@ -13,7 +13,6 @@ def load_h5ad(path: str) -> (DataFrame, Series):
     """
     dataset = read_h5ad(path)
     labels = dataset.obs["labels"]
-    dataset = dataset.to_df()
 
     return dataset, labels
 
