@@ -23,7 +23,6 @@ def get_partially_dense_size(by_type):
         nodes.append(gene_n)
 
     return int(np.sum(nodes))
-    # return len(by_type) * 8
 
 
 def get_partially_dense_mask(by_cell_type, genes):
@@ -38,7 +37,6 @@ def get_partially_dense_mask(by_cell_type, genes):
         marker_genes = by_cell_type[cell_type]
         N = len(marker_genes)
         n = int(round(np.log2(N)))
-        # n = 8
 
         for node in range(n):
             for gene in by_cell_type[cell_type]:
@@ -62,7 +60,6 @@ def get_marker_mask(by_cell_type):
         marker_genes = by_cell_type[cell_type]
         N = len(marker_genes)
         n = int(round(np.log2(N)))
-        # n = 8
 
         for node in range(n):
             mask[i][c] = 1.0

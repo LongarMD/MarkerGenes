@@ -2,8 +2,7 @@ from .. import backend
 from ..backend import Partial
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model
-import numpy as np
-
+from keras import initializers as inits
 
 def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_n=0.1,
                 activation='relu', loss='mse', optimizer='adam', supervised=False):
@@ -31,8 +30,9 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     # -- Model --
     input_layer = Input(shape=(input_dim,))
     partial_input = Partial(partial_dim, weight_mask=partially_dense_mask, use_bias=False,
-                            activation=activation)(input_layer)
+                            kernel_initializer=inits.random_normal(1, 0.1), activation=activation)(input_layer)
     marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=False,
+                           kernel_initializer=inits.random_normal(1, 0.1),
                            activation=activation, name='cell_activations')(partial_input)
 
     dense_in_1 = Dense(intermediate_dim, activation=activation)(marker_layer)
