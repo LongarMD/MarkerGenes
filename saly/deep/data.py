@@ -1,21 +1,16 @@
 from .. import backend
 from Orange.data import Table
 from anndata import read_h5ad
-from pandas import DataFrame, Series
-from numpy import sum
+import numpy as np
 
 
-def load_h5ad(path: str) -> (DataFrame, Series):
+def load_h5ad(path: str):
     """
-    Loads a data set from the h5ad format as a DataFrame.
-    :param path: The path to the .h5ad file
-    :return: A DataFrame (data) and a Series (labels) object
+    Loads a data set from the h5ad format as an AnnData object
     """
-    dataset = read_h5ad(path)
-    labels = dataset.obs["labels"]
-    dataset = dataset.to_df()
+    data_set = read_h5ad(path)
 
-    return dataset, labels
+    return data_set
 
 
 def load_markers(marker_path: str, species: str) -> list:
@@ -64,56 +59,46 @@ def drop_cell_types(n, markers):
     return [marker for marker in markers if marker not in to_drop]
 
 
-def drop_rows(data: DataFrame, labels: Series, row_names: list) -> (DataFrame, Series):
+def drop_rows(data, row_names: list):
     """
-    :param data: The DataFrame to modify
-    :param labels: Series of labels
-    :param row_names: a list of row labels to drop
-    :return: the modified DataFrame and Labels
+    Drops rows by label.
     """
-    to_drop = backend.get_rows_to_drop(row_names, labels)
+    to_keep = backend.get_rows_to_keep(row_names, data.obs['labels'])
 
-    data = data.drop(data.index[to_drop], axis=0)
-    labels = labels.drop(labels.index[to_drop], axis=0)
+    n_dropped = data.shape[0] - len(to_keep)
+    data = data[to_keep, :]
 
-    print("Dropped {0} cell(s).".format(len(to_drop)), "New shape:", data.shape)
+    print("Dropped {0} cell(s).".format(n_dropped), "New shape:", data.shape)
 
-    return data, labels
+    return data
 
 
-def drop_unused_genes(data: DataFrame, markers: list, sort_columns=True) -> DataFrame:
+def drop_unused_genes(data, markers, sort_columns=True):
     """
     Drops every column (gene) not found in the marker data set and sorts the columns by name.
-    :param data: The DataFrame to modify
-    :param markers: list of used gene markers
-    :param sort_columns: if True sorts columns by name
-    :return: The modified DataFrame
     """
     sorted_by_type = backend.sort_markers_by_type(markers)
     used_genes = backend.get_used_genes(sorted_by_type)
 
-    unused_genes = [gene for gene in data.columns if gene not in used_genes]
-    data = data.drop(unused_genes, axis=1)
+    n_dropped = data.shape[0] - len(used_genes)
+    data = data[:, used_genes]
 
     if sort_columns:
-        data = data.reindex(sorted(data.columns), axis=1)
+        data = data[:, np.argsort(data.var_names)]
 
-    print("Dropped {0} gene(s).".format(len(unused_genes)), "New shape:", data.shape)
+    print("Dropped {0} gene(s).".format(n_dropped), "New shape:", data.shape)
     return data
 
 
-def check_labels(label_sets: list, markers: list, aliases: dict, throw_exception=True) -> None:
+def check_labels(data_sets: list, markers: list, aliases: dict, throw_exception=True) -> None:
     """
     Checks for any cell types (labels) not found in the marker data set.
-    :param label_sets: lists of used labels
-    :param markers: list of markers
-    :param aliases: dictionary of `label : name_in_marker_db`
-    :param throw_exception: throw exception if unknown labels were found
     """
     unknown = []
     used_types = backend.get_cell_types(markers)
 
-    for labels in label_sets:
+    for data_set in data_sets:
+        labels = data_set.obs['labels']
         for unknown_label in backend.check_for_unknown(labels.unique(), used_types, aliases):
             if unknown_label not in unknown:
                 unknown.append(unknown_label)
@@ -133,17 +118,17 @@ def check_shape(data_sets: list, throw_exception=True) -> None:
     :param data_sets: list of DataFrames to check
     :param throw_exception: throw exception if shapes do not match
     """
-    num_genes = len(data_sets[0].columns)
+    num_genes = data_sets[0].shape[1]
     for data_set in data_sets[1:]:
-        if num_genes != len(data_set.columns):
+        if num_genes != data_set.shape[1]:
             if throw_exception:
                 raise ValueError("Column lengths do not match!", num_genes, len(data_set.columns))
             else:
                 print("COLUMN LENGTHS DO NOT MATCH!", num_genes, len(data_set.columns))
 
-    genes = data_sets[0].columns.values
+    genes = data_sets[0].obs['labels'].values
     for data_set in data_sets[1:]:
-        if sum(genes == data_set.columns.values) - len(genes) != 0:
+        if sum(genes == data_set.obs['labels'].values) - len(genes) != 0:
             if throw_exception:
                 raise ValueError("Columns are not in the same order!")
             else:

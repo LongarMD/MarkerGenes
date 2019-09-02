@@ -84,11 +84,15 @@ def get_rows_to_drop(labels_to_drop: list, labels: list) -> list:
     Returns a list of row indices to drop from a list of row labels.
     :return: list of indices
     """
-    to_drop = []
-    for i, c_type in enumerate(labels):
-        if c_type in labels_to_drop:
-            to_drop.append(i)
-    return to_drop
+    return [i for i, c_type in enumerate(labels) if c_type in labels_to_drop]
+
+
+def get_rows_to_keep(labels_to_drop: list, labels: list) -> list:
+    """
+    Returns a list of row indices to keep from a list of row labels.
+    :return: list of indices
+    """
+    return [i for i, c_type in enumerate(labels) if c_type not in labels_to_drop]
 
 
 def check_for_unknown(labels: list, cell_types: list, aliases: dict) -> list:
