@@ -25,7 +25,7 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     marker_dim = len(by_type)
     partial_dim = backend.get_partially_dense_size(by_type)
 
-    partially_dense_mask = backend.get_partially_dense_mask(by_cell_type=by_type, genes=data.columns)
+    partially_dense_mask = backend.get_partially_dense_mask(by_cell_type=by_type, genes=data.var_names)
     weight_mask = backend.get_marker_mask(by_cell_type=by_type)
 
     # -- Model --
@@ -63,19 +63,19 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     return autoencoder_model, marker_model, encoder_model
 
 
-def train_model(model, data, labels, markers, marker_aliases, epochs,
+def train_model(model, data, markers, marker_aliases, epochs,
                 validation_data=None, batch_size=256, verbose=1, callbacks=None):
     """
     Trains the Keras model.
     :return: a Keras train history object
     """
     if validation_data is not None:
-        validation_labels = validation_data[1]
+        validation_labels = validation_data.obs['labels']
         val_labels_one_hot = backend.one_hot_encode(validation_labels, markers, marker_aliases)
-        validation_data = (validation_data[0], {'cell_activations': val_labels_one_hot, 'output': validation_data[0]})
+        validation_data = (validation_data.X, {'cell_activations': val_labels_one_hot, 'output': validation_data.X})
 
-    labels_one_hot = backend.one_hot_encode(labels, markers, marker_aliases)
-    history = model.fit(data, {'cell_activations': labels_one_hot, 'output': data},
+    labels_one_hot = backend.one_hot_encode(data.obs['labels'], markers, marker_aliases)
+    history = model.fit(data.X, {'cell_activations': labels_one_hot, 'output': data.X},
                         epochs=epochs, batch_size=batch_size,
                         validation_data=validation_data,
                         callbacks=callbacks,
@@ -84,13 +84,13 @@ def train_model(model, data, labels, markers, marker_aliases, epochs,
     return history
 
 
-def test_model(model, data_x, data_y, markers, aliases, verbose=0):
+def test_model(model, data, markers, aliases, verbose=0):
     """
     Evaluates the model on the given data
     :return: the data's loss score
     """
-    labels_one_hot = backend.one_hot_encode(data_y, markers, aliases)
-    results = model.evaluate(data_x, {'cell_activations': labels_one_hot, 'output': data_x}, verbose=verbose)
+    labels_one_hot = backend.one_hot_encode(data.obs['labels'], markers, aliases)
+    results = model.evaluate(data.X, {'cell_activations': labels_one_hot, 'output': data.X}, verbose=verbose)
 
     print("Test reconstruction loss:", round(results[2], 8))
     print("Test prediction accuracy:", round(results[3] * 100, 3), "%")

@@ -1,37 +1,39 @@
 from .. import backend
-from Orange.data import Table
-from anndata import read_h5ad
+import anndata as ann
 import numpy as np
+import pandas as pd
 
 
 def load_h5ad(path: str):
     """
     Loads a data set from the h5ad format as an AnnData object
     """
-    data_set = read_h5ad(path)
-
+    data_set = ann.read_h5ad(path)
     return data_set
 
 
-def load_markers(marker_path: str, species: str) -> list:
+def load_markers(marker_path: str, species: str) -> pd.DataFrame:
     """
     Loads marker genes of the specified species.
     :param marker_path: The path to the tab separated file
     :param species: "Mouse", "Human" etc.
     :return: List of markers
     """
-    markers_db = Table(marker_path)
-    markers_db = backend.get_markers_by_species(species, markers_db)
 
-    return markers_db
+    markers_db = pd.read_csv(marker_path, delimiter='\t')
+    markers = markers_db[markers_db['Organism'] == species]
+
+    return markers
 
 
-def get_mutual_markers(gene_sets: list, markers_db: list) -> list:
+def get_mutual_markers(data_sets: list, markers_db: list) -> list:
     """
-    :param gene_sets: lists of used genes
+    :param data_sets: list of data sets
     :param markers_db: a list of markers
     :return: an intersection of markers used in the provided data set(s).
     """
+    gene_sets = [data_set.var_names for data_set in data_sets]
+
     mutual = set(backend.get_used_markers(genes=gene_sets[0], markers=markers_db))
     for genes in gene_sets[1:]:
         mutual.intersection_update(backend.get_used_markers(genes=genes, markers=markers_db))
@@ -80,7 +82,7 @@ def drop_unused_genes(data, markers, sort_columns=True):
     sorted_by_type = backend.sort_markers_by_type(markers)
     used_genes = backend.get_used_genes(sorted_by_type)
 
-    n_dropped = data.shape[0] - len(used_genes)
+    n_dropped = data.shape[1] - len(used_genes)
     data = data[:, used_genes]
 
     if sort_columns:
@@ -114,7 +116,7 @@ def check_labels(data_sets: list, markers: list, aliases: dict, throw_exception=
 
 def check_shape(data_sets: list, throw_exception=True) -> None:
     """
-    Checks if the there are the same number of
+    Checks if the there are the same number of genes
     :param data_sets: list of DataFrames to check
     :param throw_exception: throw exception if shapes do not match
     """
@@ -126,9 +128,9 @@ def check_shape(data_sets: list, throw_exception=True) -> None:
             else:
                 print("COLUMN LENGTHS DO NOT MATCH!", num_genes, len(data_set.columns))
 
-    genes = data_sets[0].obs['labels'].values
+    genes = data_sets[0].var_names.values
     for data_set in data_sets[1:]:
-        if sum(genes == data_set.obs['labels'].values) - len(genes) != 0:
+        if np.sum(genes == data_set.var_names.values) - len(genes) != 0:
             if throw_exception:
                 raise ValueError("Columns are not in the same order!")
             else:
