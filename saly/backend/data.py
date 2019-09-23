@@ -1,30 +1,15 @@
 from collections import OrderedDict
-from Orange.data import Table
 
 
-def get_markers_by_species(species: str, markers: Table) -> list:
-    """
-    Returns an array of marker genes of the specified species.
-    :param species: "Mouse", "Human" etc.
-    :param markers: Array of marker genes
-    """
-    markers_by_species = []
-    for meta in markers.metas:
-        if meta[0] == species:
-            markers_by_species.append(meta)
-    return markers_by_species
-
-
-def get_used_markers(genes: list, markers: list) -> list:
+def get_used_markers(genes: list, markers) -> list:
     """
     Returns the marker genes found in the given data set.
-    :return: list of markers
     """
     used_markers = []
     for i, gene_name in enumerate(genes):
-        for marker in markers:
-            if gene_name == marker[1]:
-                used_markers.append(tuple(marker.tolist()))
+        used = markers.loc[markers['Name'] == gene_name]
+        if not used.empty:
+            [used_markers.append(tuple(marker)) for marker in used.values.tolist()]
     return used_markers
 
 
