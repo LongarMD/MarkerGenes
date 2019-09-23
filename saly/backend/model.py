@@ -49,7 +49,7 @@ def get_partially_dense_mask(by_cell_type, genes):
 
 def get_marker_mask(by_cell_type):
     """
-    Creates a binary mask for the marker layer
+    Creates a binary mask for the marker layer.
     :param by_cell_type: Markers sorted by cell type
     """
     node_dim = get_partially_dense_size(by_cell_type)
