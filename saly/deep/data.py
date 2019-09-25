@@ -12,6 +12,10 @@ def load_h5ad(path: str):
     return data_set
 
 
+def save_h5ad(filename: str):
+    ann.write(filename)
+
+
 def load_markers(marker_path: str, species: str) -> pd.DataFrame:
     """
     Loads marker genes of the specified species.

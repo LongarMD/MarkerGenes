@@ -1,5 +1,6 @@
 from .data import sort_markers_by_type
 
+import tensorflow as tf
 import numpy as np
 from keras import backend as K
 from keras.layers import Layer
@@ -8,9 +9,6 @@ from keras.activations import softmax
 from keras.losses import categorical_crossentropy
 from keras.metrics import categorical_accuracy
 from keras.engine.base_layer import InputSpec
-
-from tensorflow import multiply, convert_to_tensor, float32
-
 
 def get_partially_dense_size(by_type):
     """
@@ -110,8 +108,6 @@ def one_hot_encode(labels, markers, aliases):
 def marker_loss(y_true, y_pred):
     """
     Get the marker cell type activations classification loss
-    :param y_true: True values
-    :param y_pred: The model's prediction
     """
     probabilities = softmax(y_pred)
     return categorical_crossentropy(y_true, probabilities)
@@ -125,7 +121,11 @@ def null_loss(y_true, y_pred):
 
 
 def marker_prediction_metric(y_true, y_pred):
+    if y_true == -1:
+        return 0
+    
     probabilities = softmax(y_pred)
+    
     return categorical_accuracy(y_true, probabilities)
 
 
@@ -158,7 +158,7 @@ class Partial(Layer):
         self.input_spec = InputSpec(min_ndim=2)
         self.supports_masking = True
 
-        weight_mask = convert_to_tensor(weight_mask, dtype=float32)
+        weight_mask = tf.convert_to_tensor(weight_mask, dtype=tf.float32)
         self.weight_mask = weight_mask
 
     def build(self, input_shape):
@@ -182,7 +182,7 @@ class Partial(Layer):
         self.built = True
 
     def call(self, inputs):
-        conns = multiply(self.kernel, self.weight_mask)
+        conns = tf.multiply(self.kernel, self.weight_mask)
         output = K.dot(inputs, conns)
         if self.use_bias:
             output = K.bias_add(output, self.bias, data_format='channels_last')

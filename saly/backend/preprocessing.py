@@ -1,19 +1,6 @@
 import numpy as np
 from scipy import sparse
-
-
-def log_10(data):
-    """
-    Log10 transformation
-    """
-    return np.log10(data + 1)
-
-
-def from_log10(data):
-    """
-    Inverse function of the log10 transformation.
-    """
-    return np.power(10, data) - 1
+import scanpy as scpy
 
 
 def get_data_splits(n: int, train: float, validation: float, test: float) -> (int, int, int):
@@ -49,21 +36,43 @@ def shuffle_data(data, axis=0):
         raise ValueError("Axis must be 0 or 1; given ", axis)
 
     return data
+    
+
+def var(x, axis=None, ddof=0):
+    """ Equivalent of np.var that supports sparse and dense matrices. """
+    if not sparse.issparse(x):
+        return np.var(x, axis, ddof=ddof)
+
+    result = x.multiply(x).mean(axis) - np.square(x.mean(axis))
+    result = np.squeeze(np.asarray(result))
+
+    # Apply correction for degrees of freedom
+    n = np.prod(x.shape) if axis is None else x.shape[axis]
+    result *= n / (n - ddof)
+
+    return result
+
+
+def std(x, axis=None, ddof=0):
+    """ Equivalent of np.std that supports sparse and dense matrices. """
+    return np.sqrt(var(x, axis=axis, ddof=ddof))
 
 
 def normalize_data(data):
-    """
-    Normalizes gene activations
-    """
-    n_columns = data.shape[1]
+    
+    scpy.pp.normalize_total(data, target_sum=1e6)
+    scpy.pp.log1p(data)
+    
+    c_std = std(data.X, axis=0)
+    c_mean = data.X.mean(axis=0).A[0]
+    
+    arr = data.X.toarray()
+    arr = np.apply_along_axis(standardize_data, 1, arr, c_mean, c_std)
+    
+    data.X = sparse.csr_matrix(arr)
+    return data
 
-    normalized = sparse.lil_matrix(data.shape)
-    for i in range(n_columns):
-        column = data[:, i]
-        max_n = column[column.argmax(), 0]
 
-        if max_n != 0.:
-            column = column / max_n
-        normalized[:, i] = column
-
-    return normalized.tocsc()
+def standardize_data(data, mean, std):
+    sub = np.subtract(data, mean)
+    return np.divide(sub, std, out=np.zeros_like(sub), where=std!=0)
