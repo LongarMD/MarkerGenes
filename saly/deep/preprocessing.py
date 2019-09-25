@@ -1,6 +1,6 @@
 from .. import backend
-import math
-from scipy import sparse
+import pandas as pd
+import numpy as np
 
 
 def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
@@ -22,6 +22,7 @@ def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
     test = data[train_index:]
 
     return train, validation, test
+
 
 def mark_as_unlabelled(data):
     data.obs['labels'] = pd.Series(np.repeat(-1, data.shape[0]),
