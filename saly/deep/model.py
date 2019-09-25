@@ -63,7 +63,7 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
 
 
 def train_model(model, data, markers, marker_aliases, epochs,
-                validation_data=None, batch_size=256, verbose=1, callbacks=None):
+                validation_data=None, batch_size=64, verbose=1, callbacks=None):
     """
     Trains the Keras model.
     :return: a Keras train history object

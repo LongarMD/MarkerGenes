@@ -1,5 +1,6 @@
 from .. import backend
 import math
+from scipy import sparse
 
 
 def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
@@ -12,15 +13,17 @@ def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
     train_index, validation_index, test_index = backend.get_data_splits(data.shape[0], train, validation, test)
     data = backend.shuffle_data(data, axis=0)
     
-    split = data.shape[0] // splits
-    for i in range(splits):
-        print("Split", i)
-        
-        start, finish = i * split, (i + 1) * split
-        data.X[start:finish] = backend.normalize_data(data[start:finish])
+    split_size = data.shape[0] // splits
+    data = backend.normalize_data(data.copy(), split_size)
 
+    
     train = data[:train_index]
     validation = data[validation_index:test_index]
     test = data[train_index:]
 
     return train, validation, test
+
+def mark_as_unlabelled(data):
+    data.obs['labels'] = pd.Series(np.repeat(-1, data.shape[0]),
+                                   index=data.obs['labels'].index)
+    return data

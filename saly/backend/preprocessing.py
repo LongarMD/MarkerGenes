@@ -58,7 +58,13 @@ def std(x, axis=None, ddof=0):
     return np.sqrt(var(x, axis=axis, ddof=ddof))
 
 
-def normalize_data(data):
+def standardize_data(data, mean, std):
+    sub = np.subtract(data, mean)
+    return np.divide(sub, std, out=np.zeros_like(sub), where=std!=0)
+
+
+def normalize_data(data, chunk_size=None):
+    chunked = chunk_size is not None
     
     scpy.pp.normalize_total(data, target_sum=1e6)
     scpy.pp.log1p(data)
@@ -66,13 +72,10 @@ def normalize_data(data):
     c_std = std(data.X, axis=0)
     c_mean = data.X.mean(axis=0).A[0]
     
-    arr = data.X.toarray()
-    arr = np.apply_along_axis(standardize_data, 1, arr, c_mean, c_std)
+    dense = data.X.toarray()
+    for chunk, start, end in data.chunked_X(chunk_size):
+        dense[start:end] = np.apply_along_axis(standardize_data, 1,
+                                               dense[start:end], c_mean, c_std)
     
-    data.X = sparse.csr_matrix(arr)
+    data.X = dense
     return data
-
-
-def standardize_data(data, mean, std):
-    sub = np.subtract(data, mean)
-    return np.divide(sub, std, out=np.zeros_like(sub), where=std!=0)

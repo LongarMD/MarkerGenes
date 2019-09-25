@@ -93,14 +93,17 @@ def one_hot_encode(labels, markers, aliases):
 
     one_hot = np.zeros(shape=(len(labels), len(by_type)))
     for i, label in enumerate(labels):
-        if label in types:
-            label_index = types.index(label)
-        elif label in aliases.keys():
-            label_index = types.index(aliases[label])
+        if label == -1:
+            one_hot[i] = np.repeat(-1, len(by_type))
         else:
-            raise NameError("Unknown cell type!", label)
-
-        one_hot[i][label_index] = 1.0
+            if label in types:
+                label_index = types.index(label)
+            elif label in aliases.keys():
+                label_index = types.index(aliases[label])
+            else:
+                raise NameError("Unknown cell type!", label)
+    
+            one_hot[i][label_index] = 1.0
 
     return one_hot
 
@@ -109,6 +112,7 @@ def marker_loss(y_true, y_pred):
     """
     Get the marker cell type activations classification loss
     """
+    print(y_true)
     probabilities = softmax(y_pred)
     return categorical_crossentropy(y_true, probabilities)
 
@@ -121,9 +125,6 @@ def null_loss(y_true, y_pred):
 
 
 def marker_prediction_metric(y_true, y_pred):
-    if y_true == -1:
-        return 0
-    
     probabilities = softmax(y_pred)
     
     return categorical_accuracy(y_true, probabilities)
