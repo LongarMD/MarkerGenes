@@ -31,8 +31,10 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     # -- Model --
     input_layer = Input(shape=(input_dim,))
     partial_input = Partial(partial_dim, weight_mask=partially_dense_mask, use_bias=True,
+                            kernel_initializer=inits.ones(),
                             activation=activation)(input_layer)
     marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=True,
+                           kernel_initializer=inits.ones(),
                            activation=activation, name='cell_activations')(partial_input)
 
     dense_in_1 = Dense(intermediate_dim, activation=activation)(marker_layer)
@@ -63,7 +65,7 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
 
 
 def train_model(model, data, markers, marker_aliases, epochs,
-                validation_data=None, batch_size=64, verbose=1, callbacks=None):
+                validation_data=None, batch_size=256, verbose=1, callbacks=None):
     """
     Trains the Keras model.
     :return: a Keras train history object

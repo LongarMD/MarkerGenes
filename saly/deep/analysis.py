@@ -74,7 +74,7 @@ def get_results(labels: list, cell_activations: list, markers: list, aliases: di
     print("Correct predictions: {c} out of {n} ({p}%)".format(c=correct, n=n, p=round(100 * (correct / n), 2)))
 
 
-def plot_model_history(history, supervised=False):
+def plot_model_history(history, supervised=False, labelled_training=False):
     """
     Draws a model's training history.
     :param history: a Keras history object
@@ -94,7 +94,9 @@ def plot_model_history(history, supervised=False):
         ax1.plot(epochs, marker_loss, 'b-,', label='Cell type prediction loss')
 
     ax1.plot(epochs, output_loss, 'b--', label='Reconstruction loss')
-    ax2.plot(epochs, accuracy, 'g--', label='Training accuracy')
+    
+    if labelled_training:
+        ax2.plot(epochs, accuracy, 'g--', label='Training accuracy')
 
     if 'val_loss' in history.history.keys():
         val_output_loss = history.history['val_output_loss']

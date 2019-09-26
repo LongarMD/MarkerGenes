@@ -16,7 +16,6 @@ def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
     split_size = data.shape[0] // splits
     data = backend.normalize_data(data.copy(), split_size)
 
-    
     train = data[:train_index]
     validation = data[validation_index:test_index]
     test = data[train_index:]
