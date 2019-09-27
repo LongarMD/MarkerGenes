@@ -58,20 +58,38 @@ def get_results(labels: list, cell_activations: list, markers: list, aliases: di
     """
 
     predictions = get_predictions(cell_activations, markers)
+    by_type = backend.sort_markers_by_type(markers)
 
+    correct_types = {}
     correct = 0
     n = len(cell_activations)
     for i, prediction in enumerate(predictions):
         label = labels[i]
+        
+        if label not in correct_types.keys():
+            correct_types[label] = 0
 
         if prediction == label:
+            correct_types[label] += 1
             correct += 1
 
         elif label in aliases.keys():
             if aliases[label] == prediction:
+                correct_types[label] += 1
                 correct += 1
-
+    
     print("Correct predictions: {c} out of {n} ({p}%)".format(c=correct, n=n, p=round(100 * (correct / n), 2)))
+    
+    label_counts = labels.value_counts()
+    for c_type in correct_types:
+        if c_type in aliases.keys():
+            n_markers = len(by_type[aliases[c_type]])
+        else:
+            n_markers = len(by_type[c_type])
+        
+        c = round(100 * (correct_types[c_type] / label_counts[c_type]), 2)
+        print("\t{}: {}% ({}/{}) | Markers: {}".format(
+            c_type, c, correct_types[c_type], label_counts[c_type], n_markers))
 
 
 def plot_model_history(history, supervised=False, labelled_training=False):

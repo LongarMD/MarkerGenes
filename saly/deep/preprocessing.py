@@ -24,6 +24,10 @@ def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
 
 
 def mark_as_unlabelled(data):
-    data.obs['labels'] = pd.Series(np.repeat(-1, data.shape[0]),
-                                   index=data.obs['labels'].index)
+    
+    if 'labels' in data.obs_keys():
+        data.obs['labels'] = pd.Series(np.repeat(-1, data.shape[0]),
+                                       index=data.obs['labels'].index)
+    else:
+        data.obs.insert(0, 'labels', np.repeat(-1, data.shape[0]), True)
     return data
