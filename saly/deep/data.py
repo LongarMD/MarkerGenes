@@ -138,4 +138,4 @@ def check_shape(data_sets: list, throw_exception=True) -> None:
             if throw_exception:
                 raise ValueError("Columns are not in the same order!")
             else:
-                print("COLUMNS ARE NOT IN THE SAME ORDER!")
+                print("Columns are not in the same order!")

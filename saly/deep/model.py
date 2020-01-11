@@ -4,6 +4,13 @@ from keras.layers import Input, Dense, Dropout
 from keras.models import Model
 from keras import initializers as inits
 
+import pandas as pd
+import numpy as np
+from scipy.sparse import lil_matrix
+from anndata import AnnData
+
+from .data import drop_unused_genes
+
 
 def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_n=0.1,
                 activation='relu', loss='mse', optimizer='adam', supervised=False):
@@ -99,3 +106,22 @@ def test_model(model, data, markers, aliases, verbose=0):
     print("Test prediction accuracy:", round(results[3] * 100, 3), "%")
 
     return results
+
+
+def get_baseline(data, markers):
+    by_type = backend.sort_markers_by_type(markers)
+    matrix = lil_matrix((data.shape[0], len(by_type)))
+
+    for i, c_type in enumerate(by_type):
+        column_matrix = len(data[:, by_type[c_type]].X.shape) > 1
+
+        result = data[:, by_type[c_type]].X.sum(axis=1 if column_matrix else 0)
+        result = result / len(by_type[c_type])
+
+        if column_matrix:
+            matrix[:, i] = np.reshape(result, matrix[:, i].shape)
+        else:
+            matrix[:, i] = result
+
+    var = pd.DataFrame(index=[c_type for c_type in by_type])
+    return AnnData(X=matrix.tocsc(), obs=data.obs, var=var)
