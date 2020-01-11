@@ -115,13 +115,12 @@ def get_baseline(data, markers):
     for i, c_type in enumerate(by_type):
         column_matrix = len(data[:, by_type[c_type]].X.shape) > 1
 
-        result = data[:, by_type[c_type]].X.sum(axis=1 if column_matrix else 0)
-        result = result / len(by_type[c_type])
-
         if column_matrix:
+            result = data[:, by_type[c_type]].X.sum(axis=1)
+            result = result / len(by_type[c_type])
             matrix[:, i] = np.reshape(result, matrix[:, i].shape)
         else:
-            matrix[:, i] = result
+            matrix[:, i] = np.zeros(matrix[:, i].shape)
 
     var = pd.DataFrame(index=[c_type for c_type in by_type])
     return AnnData(X=matrix.tocsc(), obs=data.obs, var=var)
