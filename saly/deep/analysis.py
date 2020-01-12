@@ -48,13 +48,14 @@ def get_predictions(cell_activations, markers):
     return [prediction[0] for prediction in predictions]
 
 
-def get_results(labels: list, cell_activations: list, markers: list, aliases: dict) -> None:
+def get_results(labels: list, cell_activations: list, markers: list, aliases: dict) -> float:
     """
     Compares the real labels to the cell type activations.
     :param labels: Data labels
     :param cell_activations: Activations of the Marker Layer nodes
     :param markers: list of used markers
     :param aliases: dict of `label : name_in_marker_db` aliases
+    :return
     """
 
     predictions = get_predictions(cell_activations, markers)
@@ -91,10 +92,13 @@ def get_results(labels: list, cell_activations: list, markers: list, aliases: di
         print("\t{}: {}% ({}/{}) | Markers: {}".format(
             c_type, c, correct_types[c_type], label_counts[c_type], n_markers))
 
+    return (correct / n)
 
-def plot_model_history(history, supervised=False, labelled_training=False):
+
+def plot_model_history(history, baseline_val_acc=None, supervised=False, labelled_training=False):
     """
     Draws a model's training history.
+    :param baseline_val_acc: accuracy of the baseline model on the validation set
     :param history: a Keras history object
     :param supervised: was the model supervised
     """
@@ -131,7 +135,15 @@ def plot_model_history(history, supervised=False, labelled_training=False):
         ax1.set_title('Training and validation loss')
 
         ax2.plot(epochs, val_accuracy, 'g-', label='Validation accuracy')
-        ax2.set_title('Training and validation accuracy')
+
+        if labelled_training:
+            ax2.set_title('Training, validation and baseline accuracy')
+        else:
+            ax2.set_title('Validation and baseline accuracy')
+
+        if baseline_val_acc is not None:
+            baseline_val_acc = baseline_val_acc * 100 if baseline_val_acc <= 1. else baseline_val_acc
+            ax2.axhline(baseline_val_acc, c='r', label=f'Baseline accuracy ({round(baseline_val_acc, 2)}%)')
     else:
         ax1.set_title('Training loss per epoch')
         ax2.set_title('Training accuracy per epoch')
