@@ -115,7 +115,7 @@ def marker_loss(y_true, y_pred):
     probabilities = softmax(y_pred)
     cross_entropy = categorical_crossentropy(y_true, probabilities)
     
-    return tf.where(y_true==-1, cross_entropy, tf.multiply(cross_entropy, 0))
+    return tf.where(y_true == -1, cross_entropy, tf.multiply(cross_entropy, 0))
 
 
 def null_loss(y_true, y_pred):
