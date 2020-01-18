@@ -59,7 +59,7 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
 
     if supervised:
         autoencoder_model.compile(loss={'cell_activations': backend.marker_loss, 'output': loss},
-                                  loss_weights={'cell_activations': 1., 'output': 1.},
+                                  loss_weights={'cell_activations': 1., 'output': 100.},
                                   metrics={'cell_activations': backend.marker_prediction_metric},
                                   optimizer=optimizer)
     else:

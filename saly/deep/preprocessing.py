@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
+def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None, normalize=True):
     """
     Shuffles, log10 transforms and splits the data into train, validation and test sets.
     """
@@ -14,7 +14,8 @@ def preprocess_data(data, train=0.7, validation=0.15, test=0.15, splits=None):
     data = backend.shuffle_data(data, axis=0)
     
     split_size = data.shape[0] // splits
-    data = backend.normalize_data(data.copy(), split_size)
+    if normalize:
+        data = backend.normalize_data(data.copy(), split_size)
 
     train = data[:train_index]
     validation = data[validation_index:test_index]
