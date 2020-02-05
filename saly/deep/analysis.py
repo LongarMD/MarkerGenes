@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from seaborn import distplot
-from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn import metrics
 from scipy.special import softmax
 from pandas import Series
+import math
 
 from .. import backend
 
@@ -48,35 +49,57 @@ def get_predictions(cell_activations, markers):
     return [prediction[0] for prediction in predictions]
 
 
-def get_results(labels: list, cell_activations: list, markers: list, aliases: dict) -> None:
+def get_results(labels: list, cell_activations: list, markers: list, aliases: dict) -> float:
     """
     Compares the real labels to the cell type activations.
     :param labels: Data labels
     :param cell_activations: Activations of the Marker Layer nodes
     :param markers: list of used markers
     :param aliases: dict of `label : name_in_marker_db` aliases
+    :return
     """
 
     predictions = get_predictions(cell_activations, markers)
+    by_type = backend.sort_markers_by_type(markers)
 
+    correct_types = {}
     correct = 0
     n = len(cell_activations)
     for i, prediction in enumerate(predictions):
         label = labels[i]
+        
+        if label not in correct_types.keys():
+            correct_types[label] = 0
 
         if prediction == label:
+            correct_types[label] += 1
             correct += 1
 
         elif label in aliases.keys():
             if aliases[label] == prediction:
+                correct_types[label] += 1
                 correct += 1
-
+    
     print("Correct predictions: {c} out of {n} ({p}%)".format(c=correct, n=n, p=round(100 * (correct / n), 2)))
+    
+    label_counts = labels.value_counts()
+    for c_type in correct_types:
+        if c_type in aliases.keys():
+            n_markers = len(by_type[aliases[c_type]])
+        else:
+            n_markers = len(by_type[c_type])
+        
+        c = round(100 * (correct_types[c_type] / label_counts[c_type]), 2)
+        print("\t{}: {}% ({}/{}) | Markers: {}".format(
+            c_type, c, correct_types[c_type], label_counts[c_type], n_markers))
+
+    return (correct / n)
 
 
-def plot_model_history(history, supervised=False):
+def plot_model_history(history, baseline_val_acc=None, supervised=False, labelled_training=False):
     """
     Draws a model's training history.
+    :param baseline_val_acc: accuracy of the baseline model on the validation set
     :param history: a Keras history object
     :param supervised: was the model supervised
     """
@@ -94,7 +117,9 @@ def plot_model_history(history, supervised=False):
         ax1.plot(epochs, marker_loss, 'b-,', label='Cell type prediction loss')
 
     ax1.plot(epochs, output_loss, 'b--', label='Reconstruction loss')
-    ax2.plot(epochs, accuracy, 'g--', label='Training accuracy')
+    
+    if labelled_training:
+        ax2.plot(epochs, accuracy, 'g--', label='Training accuracy')
 
     if 'val_loss' in history.history.keys():
         val_output_loss = history.history['val_output_loss']
@@ -111,7 +136,15 @@ def plot_model_history(history, supervised=False):
         ax1.set_title('Training and validation loss')
 
         ax2.plot(epochs, val_accuracy, 'g-', label='Validation accuracy')
-        ax2.set_title('Training and validation accuracy')
+
+        if labelled_training:
+            ax2.set_title('Training, validation and baseline accuracy')
+        else:
+            ax2.set_title('Validation and baseline accuracy')
+
+        if baseline_val_acc is not None:
+            baseline_val_acc = baseline_val_acc * 100 if baseline_val_acc <= 1. else baseline_val_acc
+            ax2.axhline(baseline_val_acc, c='r', label=f'Baseline accuracy ({round(baseline_val_acc, 2)}%)')
     else:
         ax1.set_title('Training loss per epoch')
         ax2.set_title('Training accuracy per epoch')
@@ -316,32 +349,27 @@ def draw_comparison(old, new, model, colours=None, graph_title=''):
     plt.show()
 
 
-def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
-                          normalize=False, title=None, cmap=plt.cm.Greens):
+def draw_confusion_matrix(labels, cell_activations, markers, aliases, title=None, cmap=plt.cm.Greens):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
     if not title:
-        if normalize:
-            title = 'Normalized confusion matrix'
-        else:
-            title = 'Confusion matrix'
+        title = 'Confusion matrix'
 
     cell_types = backend.get_cell_types(markers)
-    top_activations = backend.get_top_activated_indices(1, cell_type_activations)
+    top_activations = backend.get_top_activated_indices(1, cell_activations)
 
     predictions = backend.index_to_cell_type(top_activations, cell_types)
     predictions = Series([p[0] for p in predictions])
 
+    y_true = labels
     y_true = y_true.apply(lambda x: aliases[x] if x in aliases.keys() else x)
     unique_classes = sorted(y_true.append(predictions).unique())
 
-    cm = confusion_matrix(y_true, predictions)
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    cm = metrics.confusion_matrix(y_true, predictions)
 
-    fig, ax = plt.subplots(figsize=(7, 7), dpi=80)
+    fig, ax = plt.subplots(figsize=(10, 10), dpi=80)
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.figure.colorbar(im, ax=ax)
 
@@ -355,21 +383,20 @@ def draw_confusion_matrix(y_true, cell_type_activations, markers, aliases,
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
              rotation_mode="anchor")
 
-    fmt = '.2f' if normalize else 'd'
     thresh = cm.max() / 2.
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
-            ax.text(j, i, format(cm[i, j], fmt),
+            ax.text(j, i, format(cm[i, j], 'd'),
                     ha="center", va="center",
                     color="white" if cm[i, j] > thresh else "black")
-    fig.tight_layout()
 
 
-def get_average_auc(labels, cell_activations, markers, aliases, draw=False):
+def draw_roc(labels, cell_activations, markers, aliases):
     """
     Returns the average ROC AUC score and, if defined, draws an ROC graph for each class.
     """
-    probs = softmax(cell_activations)
+    probs = softmax(cell_activations, axis=1)
+    evaluation = backend.get_class_evaluation(labels, cell_activations, markers, aliases)
 
     by_type = backend.sort_markers_by_type(markers)
     types = list(by_type.keys())
@@ -379,27 +406,54 @@ def get_average_auc(labels, cell_activations, markers, aliases, draw=False):
     tpr = dict()
     roc_auc = dict()
     n_classes = len(types)
+
     for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_true[:, i], probs[:, i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
+        fpr[i], tpr[i], _ = metrics.roc_curve(y_true[:, i], probs[:, i])
+        roc_auc[i] = metrics.auc(fpr[i], tpr[i])
 
     n = 0
     used = []
-    for i in range(n_classes):
-        score = roc_auc[i]
+    to_draw = []
 
+    for i, c_type in enumerate(types):
+        score = roc_auc[i]
         if not np.isnan(score):
             n += 1
             used.append(score)
-            if draw:
-                plt.figure()
-                plt.plot(fpr[i], tpr[i], label='ROC curve (area = %0.2f)' % score)
-                plt.plot([0, 1], [0, 1], 'k--')
-                plt.xlim([0.0, 1.0])
-                plt.ylim([0.0, 1.05])
-                plt.xlabel('False Positive Rate')
-                plt.ylabel('True Positive Rate')
-                plt.title('Receiver operating characteristic example')
-                plt.legend(loc="lower right")
-                plt.show()
-    print("Average ROC AUC:", round(sum(used) / n, 3))
+            to_draw.append([fpr[i], tpr[i], score, c_type])
+
+    # Drawing the plots
+    n_columns = 3
+    n_rows = int(math.ceil(len(to_draw) / n_columns))
+
+    fig, ax = plt.subplots(nrows=n_rows, ncols=n_columns)
+    fig.set_figheight(15)
+    fig.set_figwidth(15)
+    plt.subplots_adjust(top=0.6, bottom=0.01, hspace=0.2, wspace=0.2)
+
+    k = 0
+    for i, col in enumerate(ax):
+        for j, row in enumerate(col):
+            if k > len(to_draw):
+                row.remove()
+                continue
+
+            plot = to_draw[k]
+            row.plot(plot[0], plot[1], label='ROC curve (area = %0.2f)' % plot[2])
+            row.plot([0, 1], [0, 1], 'k--')
+
+            row.set_aspect(1.)
+            row.set_xlim([0.0, 1.0])
+            row.set_ylim([0.0, 1.05])
+
+            f1 = evaluation[plot[3]]['f1']
+            row.plot([], [], ' ', label=f'F1 score: {round(f1, 3)}')
+
+            row.set_xlabel('False Positive Rate')
+            row.set_ylabel('True Positive Rate')
+            row.title.set_text(f'ROC curve of {plot[3]}')
+            row.legend(loc="lower right")
+
+            k += 1
+
+    plt.show()

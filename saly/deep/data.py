@@ -12,10 +12,6 @@ def load_h5ad(path: str):
     return data_set
 
 
-def save_h5ad(filename: str):
-    ann.write(filename)
-
-
 def load_markers(marker_path: str, species: str) -> pd.DataFrame:
     """
     Loads marker genes of the specified species.
@@ -79,15 +75,6 @@ def drop_rows(data, row_names: list):
     return data
 
 
-def drop_unused_rows(data, rows_to_keep: list):
-    n_dropped = data.shape[0] - len(rows_to_keep)
-    data = data[rows_to_keep, :]
-
-    print("Dropped {0} cell(s).".format(n_dropped), "New shape:", data.shape)
-
-    return data
-
-
 def drop_unused_genes(data, markers, sort_columns=True):
     """
     Drops every column (gene) not found in the marker data set and sorts the columns by name.
@@ -102,6 +89,15 @@ def drop_unused_genes(data, markers, sort_columns=True):
         data = data[:, np.argsort(data.var_names)]
 
     print("Dropped {0} gene(s).".format(n_dropped), "New shape:", data.shape)
+    return data
+
+
+def drop_unused_rows(data, rows_to_keep: list):
+    n_dropped = data.shape[0] - len(rows_to_keep)
+    data = data[rows_to_keep, :]
+
+    print("Dropped {0} cell(s).".format(n_dropped), "New shape:", data.shape)
+
     return data
 
 
@@ -147,4 +143,4 @@ def check_shape(data_sets: list, throw_exception=True) -> None:
             if throw_exception:
                 raise ValueError("Columns are not in the same order!")
             else:
-                print("COLUMNS ARE NOT IN THE SAME ORDER!")
+                print("Columns are not in the same order!")

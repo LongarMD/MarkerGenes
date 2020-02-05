@@ -30,7 +30,7 @@ def shuffle_data(data, axis=0):
         idx = np.random.permutation(data.obs['labels'].index)
         data = data[idx, :]
     elif axis == 1:
-        idx = np.random.permutation(data.var_names.index)
+        idx = np.random.permutation(data.var_names)
         data = data[:, idx]
     else:
         raise ValueError("Axis must be 0 or 1; given ", axis)
@@ -69,13 +69,14 @@ def normalize_data(data, chunk_size=None):
     scpy.pp.normalize_total(data, target_sum=1e6)
     scpy.pp.log1p(data)
     
+    """
     c_std = std(data.X, axis=0)
     c_mean = data.X.mean(axis=0).A[0]
-    
     dense = data.X.toarray()
     for chunk, start, end in data.chunked_X(chunk_size):
         dense[start:end] = np.apply_along_axis(standardize_data, 1,
                                                dense[start:end], c_mean, c_std)
     
     data.X = dense
+    """
     return data
