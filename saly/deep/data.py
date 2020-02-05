@@ -79,6 +79,15 @@ def drop_rows(data, row_names: list):
     return data
 
 
+def drop_unused_rows(data, rows_to_keep: list):
+    n_dropped = data.shape[0] - len(rows_to_keep)
+    data = data[rows_to_keep, :]
+
+    print("Dropped {0} cell(s).".format(n_dropped), "New shape:", data.shape)
+
+    return data
+
+
 def drop_unused_genes(data, markers, sort_columns=True):
     """
     Drops every column (gene) not found in the marker data set and sorts the columns by name.
