@@ -39,11 +39,13 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     input_layer = Input(shape=(input_dim,))
 
     partial_input = Partial(partial_dim, weight_mask=partially_dense_mask, use_bias=True,
-                            kernel_initializer=inits.ones(),
+                            kernel_initializer=inits.RandomUniform(minval=1., maxval=2.),
+                            #kernel_initializer='ones',
                             activation=activation)(input_layer)
     
     marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=True,
-                           kernel_initializer=inits.ones(),
+                           kernel_initializer=inits.RandomUniform(minval=1., maxval=2.),
+                           #kernel_initializer='ones',
                            activation=activation, name='cell_activations')(partial_input)
 
     dense_in_1 = Dense(intermediate_dim, activation=activation)(marker_layer)
@@ -60,12 +62,12 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     if supervised:
         autoencoder_model.compile(loss={'cell_activations': backend.marker_loss, 'output': loss},
                                   loss_weights={'cell_activations': 1., 'output': 100.},
-                                  metrics={'cell_activations': backend.marker_prediction_metric},
+                                  metrics={'cell_activations': backend.celltype_accuracy},
                                   optimizer=optimizer)
     else:
         autoencoder_model.compile(loss={'cell_activations': backend.null_loss, 'output': loss},
                                   loss_weights={'cell_activations': 1., 'output': 1000.},
-                                  metrics={'cell_activations': backend.marker_prediction_metric},
+                                  metrics={'cell_activations': backend.celltype_accuracy},
                                   optimizer=optimizer)
     marker_model.compile(loss=loss, optimizer=optimizer)
     encoder_model.compile(loss=loss, optimizer=optimizer)
