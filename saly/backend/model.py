@@ -112,10 +112,8 @@ def marker_loss(y_true, y_pred):
     """
     Get the marker cell type activations classification loss
     """
-    probabilities = softmax(y_pred)
-    cross_entropy = categorical_crossentropy(y_true, probabilities)
-    
-    return tf.where(y_true == -1, cross_entropy, tf.multiply(cross_entropy, 0))
+    probs = softmax(y_pred)
+    return categorical_crossentropy(y_true, probs)
 
 
 def null_loss(y_true, y_pred):
@@ -125,10 +123,8 @@ def null_loss(y_true, y_pred):
     return 0 * y_true
 
 
-def marker_prediction_metric(y_true, y_pred):
-    probabilities = softmax(y_pred)
-    
-    return categorical_accuracy(y_true, probabilities)
+def celltype_accuracy(y_true, y_pred):    
+    return categorical_accuracy(y_true, y_pred)
 
 
 class Partial(Layer):

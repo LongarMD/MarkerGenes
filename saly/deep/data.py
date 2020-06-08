@@ -92,6 +92,15 @@ def drop_unused_genes(data, markers, sort_columns=True):
     return data
 
 
+def drop_unused_rows(data, rows_to_keep: list):
+    n_dropped = data.shape[0] - len(rows_to_keep)
+    data = data[rows_to_keep, :]
+
+    print("Dropped {0} cell(s).".format(n_dropped), "New shape:", data.shape)
+
+    return data
+
+
 def check_labels(data_sets: list, markers: list, aliases: dict, throw_exception=True) -> None:
     """
     Checks for any cell types (labels) not found in the marker data set.
