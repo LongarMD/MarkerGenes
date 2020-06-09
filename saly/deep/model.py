@@ -1,8 +1,8 @@
 from .. import backend
 from ..backend import Partial
-from keras.layers import Input, Dense, Dropout
-from keras.models import Model
-from keras import initializers as inits
+from tensorflow.keras.layers import Input, Dense, Dropout
+from tensorflow.keras.models import Model
+from tensorflow.keras import initializers as inits
 
 import pandas as pd
 import numpy as np
@@ -39,12 +39,12 @@ def build_model(data, markers, bottleneck_dim=25, intermediate_dim=100, dropout_
     input_layer = Input(shape=(input_dim,))
 
     partial_input = Partial(partial_dim, weight_mask=partially_dense_mask, use_bias=True,
-                            kernel_initializer=inits.RandomUniform(minval=1., maxval=2.),
+                            #kernel_initializer=inits.RandomUniform(minval=1., maxval=2.),
                             #kernel_initializer='ones',
                             activation=activation)(input_layer)
     
     marker_layer = Partial(marker_dim, weight_mask=weight_mask, use_bias=True,
-                           kernel_initializer=inits.RandomUniform(minval=1., maxval=2.),
+                           #kernel_initializer=inits.RandomUniform(minval=1., maxval=2.),
                            #kernel_initializer='ones',
                            activation=activation, name='cell_activations')(partial_input)
 

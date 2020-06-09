@@ -2,13 +2,14 @@ from .data import sort_markers_by_type
 
 import tensorflow as tf
 import numpy as np
-from keras import backend as K
-from keras.layers import Layer
-from keras import activations, initializers, regularizers, constraints
-from keras.activations import softmax
-from keras.losses import categorical_crossentropy
-from keras.metrics import categorical_accuracy
-from keras.engine.base_layer import InputSpec
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Layer
+from tensorflow.keras import activations, initializers, regularizers, constraints
+from tensorflow.keras.activations import softmax
+from tensorflow.keras.losses import categorical_crossentropy
+from tensorflow.keras.metrics import categorical_accuracy
+from tensorflow.keras.layers import InputSpec
+
 
 def get_partially_dense_size(by_type):
     """
